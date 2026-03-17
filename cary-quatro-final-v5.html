@@ -161,8 +161,9 @@ section{padding:6rem 5rem;position:relative}
 footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .footer-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:.78rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold)}
 .footer-copy{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.14em;color:var(--steel)}
-.fade{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease}
+.fade{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
 .fade.vis{opacity:1;transform:none}
+.no-js .fade{opacity:1;transform:none}
 @media(max-width:1100px){
   nav{padding:1.2rem 1.5rem}.nav-links{display:none}
   section{padding:4.5rem 2rem}.hero{padding:7rem 2rem 4rem}.hero-badge{display:none}
@@ -191,30 +192,44 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
 
 /* PROJECTS */
 .projects-sec{background:var(--deep);border-top:1px solid var(--border)}
-.proj-intro{font-size:.95rem;color:var(--steel);margin-bottom:2rem;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em}
+.proj-intro{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.12em;color:var(--steel);margin-bottom:2rem}
 .proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2rem}
-.proj-card{border:1px solid var(--border);background:var(--panel);color:inherit;display:flex;flex-direction:column;transition:all .35s;overflow:hidden;cursor:pointer}
+.proj-card{border:1px solid var(--border);background:var(--panel);color:inherit;display:flex;flex-direction:column;transition:border-color .3s;overflow:hidden;cursor:pointer}
 .proj-card:hover{border-color:var(--border-hi)}
-.proj-card.open{border-color:var(--gold);grid-column:span 3;flex-direction:row;align-items:flex-start;gap:0}
-.proj-card.open .proj-thumb{width:220px;flex-shrink:0;height:100%;min-height:200px;border-radius:0}
+.proj-card.open{border-color:var(--gold);grid-column:span 3;flex-direction:row;align-items:stretch;gap:0}
+.proj-card.open .proj-thumb{width:240px;flex-shrink:0;min-height:220px;border-radius:0;align-items:center;justify-content:center}
 .proj-card.open .proj-expand-hint{display:none}
-.proj-thumb{height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;position:relative;overflow:hidden;transition:all .35s}
-.proj-expand-hint{font-family:'Space Mono',monospace;font-size:.45rem;letter-spacing:.15em;text-transform:uppercase;opacity:.5;margin-top:.3rem}
-.proj-thumb-icon{font-size:2.5rem}
+.proj-thumb{height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;position:relative;overflow:hidden;transition:all .35s}
+.proj-expand-hint{font-family:'Space Mono',monospace;font-size:.45rem;letter-spacing:.15em;text-transform:uppercase;opacity:.45;margin-top:.3rem}
+.proj-thumb-icon{font-size:2.5rem;transition:opacity .3s}
 .proj-thumb-label{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;opacity:.8}
+/* Uploaded logo replaces icon */
+.proj-logo-img-main{width:80%;max-height:70px;object-fit:contain;border-radius:4px}
+/* Dual logos (Defense card) */
+.proj-dual-logos{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px}
+.proj-logo-img{max-height:32px;max-width:100px;object-fit:contain}
+.proj-logo-ds{filter:brightness(2) invert(0)}
+/* Color themes */
 .proj-ford{background:linear-gradient(135deg,#0b2a5e,#1a4a9e)}
 .proj-harman{background:linear-gradient(135deg,#0d0d0d,#2a1a3e)}
-.proj-aws{background:linear-gradient(135deg,#1a2a1a,#1a4a2a);color:#ff9900}
+.proj-aws{background:linear-gradient(135deg,#0f1b0f,#1b3a1b)}
 .proj-scoutus{background:linear-gradient(135deg,#1a1a2a,#2a1a0a)}
-.proj-defense{background:linear-gradient(135deg,#1a0a0a,#3a1a0a)}
+.proj-defense{background:linear-gradient(135deg,#100808,#200a0a)}
 .proj-speedshift{background:linear-gradient(135deg,#0a1a0a,#1a2a1a)}
 .proj-info{padding:1.5rem 1.8rem;flex:1;display:flex;flex-direction:column;gap:.5rem}
 .proj-tag{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
 .proj-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--white)}
 .proj-desc{font-size:.9rem;color:var(--steel);line-height:1.7}
-.proj-expanded{display:none;flex-direction:column;gap:1rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.proj-expanded{display:none;flex-direction:column;gap:1.2rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
 .proj-card.open .proj-expanded{display:flex}
+/* Logo row */
+.proj-logo-row{display:flex;align-items:center;gap:1rem;padding:.6rem .8rem;background:rgba(255,255,255,.03);border:1px solid var(--border)}
+.proj-logo-row--static{background:rgba(201,169,110,.05);border-color:rgba(201,169,110,.2)}
+.logo-upload-btn{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px dashed rgba(201,169,110,.4);padding:.4rem .9rem;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap}
+.logo-upload-btn:hover{border-color:var(--gold);background:rgba(201,169,110,.07)}
+/* Video */
 .proj-video-area{display:flex;flex-direction:column;gap:.5rem}
+.proj-dual-video{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .proj-video-label{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .proj-video-frame{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:#000;border:1px solid var(--border)}
 .proj-video-frame iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
@@ -223,7 +238,7 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
 .proj-video-ph-text{font-size:.85rem;color:var(--steel);line-height:1.6}
 .proj-video-input{width:100%;background:var(--deep);border:1px solid var(--border);color:var(--silver);font-family:'Space Mono',monospace;font-size:.6rem;padding:.6rem .8rem;outline:none;transition:border-color .3s}
 .proj-video-input:focus{border-color:var(--gold)}
-.proj-link-btn{display:inline-block;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);background:var(--gold);padding:.6rem 1.4rem;text-decoration:none;align-self:flex-start;transition:all .3s}
+.proj-link-btn{display:inline-block;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);background:var(--gold);padding:.65rem 1.5rem;text-decoration:none;align-self:flex-start;transition:all .3s;border:none;cursor:pointer}
 .proj-link-btn:hover{background:var(--gold-lt)}
 /* EMULATOR */
 .emulator-sec{background:var(--ink);border-top:1px solid var(--border)}
@@ -269,6 +284,7 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
 </style>
 </head>
 <body>
+<noscript><style>.fade{opacity:1!important;transform:none!important}</style></noscript>
 <nav>
   <a class="nav-brand" href="#top">Cary Quatro, MBA</a>
   <ul class="nav-links">
@@ -677,13 +693,13 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
 <section class="projects-sec" id="projects">
   <div class="sec-label">Selected Work</div>
   <h2 class="sec-heading">Featured <em>Projects &amp; Ventures</em></h2>
-  <p class="proj-intro">Click any project to expand details, watch videos, or visit the live site.</p>
+  <p class="proj-intro">Click any project to expand — watch videos and visit live sites. Logos can be added to any card.</p>
   <div class="proj-grid">
 
     <!-- FORD -->
     <div class="proj-card fade" onclick="toggleProj(this)">
-      <div class="proj-thumb proj-ford">
-        <span class="proj-thumb-icon">&#128663;</span>
+      <div class="proj-thumb proj-ford" id="logo-ford">
+        <span class="proj-thumb-icon" id="icon-ford">&#128663;</span>
         <div class="proj-thumb-label">Ford Motor Company</div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
@@ -692,21 +708,26 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <div class="proj-title">Ford Radio Analytics &amp; FordPass</div>
         <p class="proj-desc">Led first-ever non-automotive revenue product at Ford &mdash; Radio Analytics. Drove FordPass connected services, SYNC 3.2, and co-founded Ford Commercial Solutions &amp; Ford Digital Services. $140M portfolio, 300+ team.</p>
         <div class="proj-expanded">
+          <div class="proj-logo-row">
+            <label class="logo-upload-btn" onclick="event.stopPropagation()" title="Add logo">
+              &#43; Logo <input type="file" accept="image/*" onchange="uploadLogo(this,'logo-ford','icon-ford')" style="display:none">
+            </label>
+          </div>
           <div class="proj-video-area">
-            <div class="proj-video-label">&#127916; Watch: FordPass Overview</div>
+            <div class="proj-video-label">&#127916; FordPass Overview</div>
             <div class="proj-video-frame">
-              <iframe src="https://www.youtube.com/embed/X4YCGzgS7fU" title="FordPass" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <iframe src="https://www.youtube.com/embed/X4YCGzgS7fU?rel=0&modestbranding=1" title="FordPass" frameborder="0" allowfullscreen loading="lazy"></iframe>
             </div>
           </div>
-          <a class="proj-link-btn" href="https://www.ford.com/fordpass/" target="_blank" rel="noopener">Visit FordPass &rarr;</a>
+          <a class="proj-link-btn" href="https://www.ford.com/fordpass/" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit FordPass &rarr;</a>
         </div>
       </div>
     </div>
 
     <!-- HARMAN -->
     <div class="proj-card fade" onclick="toggleProj(this)">
-      <div class="proj-thumb proj-harman">
-        <span class="proj-thumb-icon">&#127760;</span>
+      <div class="proj-thumb proj-harman" id="logo-harman">
+        <span class="proj-thumb-icon" id="icon-harman">&#127760;</span>
         <div class="proj-thumb-label">Harman International</div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
@@ -715,21 +736,26 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <div class="proj-title">HARMAN IGNITE Platform</div>
         <p class="proj-desc">Led fleet and cloud services strategy on HARMAN IGNITE &mdash; deployed across 50M+ vehicles globally. Built $500M+ pipeline; launched Harman Ready Fleet and Hyper Fleet product lines.</p>
         <div class="proj-expanded">
+          <div class="proj-logo-row">
+            <label class="logo-upload-btn" onclick="event.stopPropagation()" title="Add logo">
+              &#43; Logo <input type="file" accept="image/*" onchange="uploadLogo(this,'logo-harman','icon-harman')" style="display:none">
+            </label>
+          </div>
           <div class="proj-video-area">
-            <div class="proj-video-label">&#127916; Watch: HARMAN IGNITE</div>
+            <div class="proj-video-label">&#127916; HARMAN IGNITE</div>
             <div class="proj-video-frame">
-              <iframe src="https://www.youtube.com/embed/7I3NQgKfFAk" title="HARMAN IGNITE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <iframe src="https://www.youtube.com/embed/7I3NQgKfFAk?rel=0&modestbranding=1" title="HARMAN IGNITE" frameborder="0" allowfullscreen loading="lazy"></iframe>
             </div>
           </div>
-          <a class="proj-link-btn" href="https://www.harman.com/solutions/automotive/connected-services/ignite" target="_blank" rel="noopener">Visit HARMAN IGNITE &rarr;</a>
+          <a class="proj-link-btn" href="https://www.harman.com/solutions/automotive/connected-services/ignite" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit HARMAN IGNITE &rarr;</a>
         </div>
       </div>
     </div>
 
     <!-- AWS -->
     <div class="proj-card fade" onclick="toggleProj(this)">
-      <div class="proj-thumb proj-aws">
-        <span class="proj-thumb-icon">&#9729;</span>
+      <div class="proj-thumb proj-aws" id="logo-aws">
+        <span class="proj-thumb-icon" id="icon-aws">&#9729;</span>
         <div class="proj-thumb-label">Amazon Web Services</div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
@@ -738,21 +764,26 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <div class="proj-title">AWS Global Automotive Advisory</div>
         <p class="proj-desc">Principal Advisory Consultant shaping cloud, data, and AI platform strategies for global OEMs and Tier-1s. Contributed to nine-figure GTM revenue opportunities across SDV, EV, and connected services.</p>
         <div class="proj-expanded">
+          <div class="proj-logo-row">
+            <label class="logo-upload-btn" onclick="event.stopPropagation()" title="Add logo">
+              &#43; Logo <input type="file" accept="image/*" onchange="uploadLogo(this,'logo-aws','icon-aws')" style="display:none">
+            </label>
+          </div>
           <div class="proj-video-area">
-            <div class="proj-video-label">&#127916; Watch: AWS Automotive</div>
+            <div class="proj-video-label">&#127916; AWS Automotive</div>
             <div class="proj-video-frame">
-              <iframe src="https://www.youtube.com/embed/cW3RGaFwkas" title="AWS Automotive" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <iframe src="https://www.youtube.com/embed/cW3RGaFwkas?rel=0&modestbranding=1" title="AWS Automotive" frameborder="0" allowfullscreen loading="lazy"></iframe>
             </div>
           </div>
-          <a class="proj-link-btn" href="https://aws.amazon.com/automotive/" target="_blank" rel="noopener">AWS Automotive &rarr;</a>
+          <a class="proj-link-btn" href="https://aws.amazon.com/automotive/" target="_blank" rel="noopener" onclick="event.stopPropagation()">AWS Automotive &rarr;</a>
         </div>
       </div>
     </div>
 
     <!-- SCOUTUS -->
     <div class="proj-card fade" onclick="toggleProj(this)">
-      <div class="proj-thumb proj-scoutus">
-        <span class="proj-thumb-icon">&#127942;</span>
+      <div class="proj-thumb proj-scoutus" id="logo-scoutus">
+        <span class="proj-thumb-icon" id="icon-scoutus">&#127942;</span>
         <div class="proj-thumb-label">ScoutUS</div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
@@ -761,21 +792,27 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <div class="proj-title">ScoutUS Scouting Platform</div>
         <p class="proj-desc">Director of Partnerships for a collegiate and professional scouting platform &mdash; building athlete partnerships across MLB, NFL, NBA, and NHL. Customers include universities, e-Sports/Evil Genius, and professional teams.</p>
         <div class="proj-expanded">
-          <div class="proj-video-placeholder">
-            <span>&#127916;</span>
-            <div class="proj-video-ph-text">Add a YouTube or Vimeo URL below to embed a ScoutUS demo video</div>
-            <input class="proj-video-input" type="text" placeholder="Paste YouTube URL here (e.g. https://youtube.com/watch?v=...)" onclick="event.stopPropagation()" oninput="embedVideo(this)" />
+          <div class="proj-logo-row">
+            <label class="logo-upload-btn" onclick="event.stopPropagation()" title="Add logo">
+              &#43; Logo <input type="file" accept="image/*" onchange="uploadLogo(this,'logo-scoutus','icon-scoutus')" style="display:none">
+            </label>
           </div>
-          <a class="proj-link-btn" href="https://www.linkedin.com/in/cary-quatro-mba-2286515" target="_blank" rel="noopener">Connect on LinkedIn &rarr;</a>
+          <div class="proj-video-placeholder" id="vph-scoutus">
+            <span>&#127916;</span>
+            <div class="proj-video-ph-text">Paste a YouTube or Vimeo URL to embed a demo video</div>
+            <input class="proj-video-input" type="text" placeholder="https://youtube.com/watch?v=..." onclick="event.stopPropagation()" oninput="embedVideo(this,'vph-scoutus')">
+          </div>
+          <a class="proj-link-btn" href="https://www.linkedin.com/in/cary-quatro-mba-2286515" target="_blank" rel="noopener" onclick="event.stopPropagation()">Connect on LinkedIn &rarr;</a>
         </div>
       </div>
     </div>
 
-    <!-- DECISION SCIENCES -->
+    <!-- DECISION SCIENCES / GUNSENS — logos embedded -->
     <div class="proj-card fade" onclick="toggleProj(this)">
-      <div class="proj-thumb proj-defense">
-        <span class="proj-thumb-icon">&#128737;</span>
-        <div class="proj-thumb-label">Decision Sciences / Gunsens</div>
+      <div class="proj-thumb proj-defense" id="logo-defense">
+        <div class="proj-dual-logos">
+          <img src="Gunsens.png" alt="Gunsens" class="proj-logo-img" id="icon-defense-gs">
+         </div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
       <div class="proj-info">
@@ -783,21 +820,35 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <div class="proj-title">Gunsens &amp; Decision Sciences</div>
         <p class="proj-desc">AI-based active shooter detection (Gunsens) and Los Alamos-developed container scanning (Decision Sciences) for ports, borders, stadiums, and infrastructure &mdash; serving USG, Singapore, and UAE.</p>
         <div class="proj-expanded">
-          <div class="proj-video-area">
-            <div class="proj-video-label">&#127916; Watch: Decision Sciences</div>
-            <div class="proj-video-frame">
-              <iframe src="https://www.youtube.com/embed/0mFLBwBv0o8" title="Decision Sciences" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div class="proj-logo-row proj-logo-row--static">
+            <img src="Gunsens.png">
+                      </div>
+          <div class="proj-dual-video">
+            <div class="proj-video-area">
+              <div class="proj-video-label">&#127916; Gunsens — Active Shooter Detection</div>
+              <div class="proj-video-frame">
+                <iframe src="https://www.youtube.com/embed/1B8RRDmGw2Y?rel=0&modestbranding=1" title="Gunsens" frameborder="0" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+            <div class="proj-video-area">
+              <div class="proj-video-label">&#127916; Decision Sciences — Container Scanning</div>
+              <div class="proj-video-frame">
+                <iframe src="https://www.youtube.com/embed/Lu6gUY6ePuo?rel=0&modestbranding=1" title="Decision Sciences" frameborder="0" allowfullscreen loading="lazy"></iframe>
+              </div>
             </div>
           </div>
-          <a class="proj-link-btn" href="https://decisionsciences.com" target="_blank" rel="noopener">Visit Decision Sciences &rarr;</a>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap">
+            <a class="proj-link-btn" href="https://gunsens.com" target="_blank" rel="noopener" onclick="event.stopPropagation()">Gunsens.com &rarr;</a>
+            <a class="proj-link-btn" href="https://decisionsciences.com" target="_blank" rel="noopener" onclick="event.stopPropagation()">Decision Sciences &rarr;</a>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- SPEEDSHIFT / QUANTUM -->
+    <!-- SPEEDSHIFT -->
     <div class="proj-card fade" onclick="toggleProj(this)">
-      <div class="proj-thumb proj-speedshift">
-        <span class="proj-thumb-icon">&#127894;</span>
+      <div class="proj-thumb proj-speedshift" id="logo-speedshift">
+        <span class="proj-thumb-icon" id="icon-speedshift">&#127894;</span>
         <div class="proj-thumb-label">Speedshift Ventures</div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
@@ -806,18 +857,24 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <div class="proj-title">Speedshift Ventures &amp; Quantum(x)Logix</div>
         <p class="proj-desc">Director of Technology for Speedshift Ventures GovCon + VC accelerator, and executive at Quantum(x)Logix SDVOSB &mdash; driving cybersecurity and technology strategy for government clients.</p>
         <div class="proj-expanded">
-          <div class="proj-video-placeholder">
-            <span>&#127916;</span>
-            <div class="proj-video-ph-text">Add a YouTube or Vimeo URL to embed a demo video</div>
-            <input class="proj-video-input" type="text" placeholder="Paste YouTube URL here (e.g. https://youtube.com/watch?v=...)" onclick="event.stopPropagation()" oninput="embedVideo(this)" />
+          <div class="proj-logo-row">
+            <label class="logo-upload-btn" onclick="event.stopPropagation()" title="Add logo">
+              &#43; Logo <input type="file" accept="image/*" onchange="uploadLogo(this,'logo-speedshift','icon-speedshift')" style="display:none">
+            </label>
           </div>
-          <a class="proj-link-btn" href="https://www.linkedin.com/in/cary-quatro-mba-2286515" target="_blank" rel="noopener">Connect on LinkedIn &rarr;</a>
+          <div class="proj-video-placeholder" id="vph-speedshift">
+            <span>&#127916;</span>
+            <div class="proj-video-ph-text">Paste a YouTube or Vimeo URL to embed a demo video</div>
+            <input class="proj-video-input" type="text" placeholder="https://youtube.com/watch?v=..." onclick="event.stopPropagation()" oninput="embedVideo(this,'vph-speedshift')">
+          </div>
+          <a class="proj-link-btn" href="https://www.linkedin.com/in/cary-quatro-mba-2286515" target="_blank" rel="noopener" onclick="event.stopPropagation()">Connect on LinkedIn &rarr;</a>
         </div>
       </div>
     </div>
 
   </div>
 </section>
+
 
 
 <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
@@ -1017,26 +1074,92 @@ function toggleProj(card) {
   }
 }
 
-// Paste-to-embed video URL
-function embedVideo(input) {
-  const val = input.value.trim();
-  let videoId = null;
-  // YouTube
-  const ytMatch = val.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-  if (ytMatch) videoId = 'yt:' + ytMatch[1];
-  // Vimeo
-  const viMatch = val.match(/vimeo\.com\/(\d+)/);
-  if (viMatch) videoId = 'vi:' + viMatch[1];
+// Upload logo to project thumbnail
+function uploadLogo(input, thumbId, iconId) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const thumb = document.getElementById(thumbId);
+    const icon  = document.getElementById(iconId);
+    if (!thumb) return;
+    // Hide old icon/label, insert logo image
+    if (icon) icon.style.display = 'none';
+    const existing = thumb.querySelector('.proj-logo-img-main');
+    if (existing) existing.remove();
+    const img = document.createElement('img');
+    img.src = e.target.result;
+    img.className = 'proj-logo-img-main';
+    img.alt = 'Logo';
+    // Insert before the label
+    const label = thumb.querySelector('.proj-thumb-label');
+    if (label) thumb.insertBefore(img, label);
+    else thumb.prepend(img);
+    // Update logo row preview
+    const row = thumb.closest('.proj-card').querySelector('.proj-logo-row');
+    if (row) {
+      const prev = row.querySelector('.logo-preview');
+      if (prev) prev.remove();
+      const preview = document.createElement('img');
+      preview.src = e.target.result;
+      preview.className = 'logo-preview';
+      preview.style.cssText = 'height:26px;object-fit:contain;border-radius:2px;margin-left:.5rem';
+      row.appendChild(preview);
+    }
+  };
+  reader.readAsDataURL(input.files[0]);
+}
 
-  if (videoId) {
-    const placeholder = input.closest('.proj-video-placeholder');
-    const src = videoId.startsWith('yt:')
-      ? 'https://www.youtube.com/embed/' + videoId.slice(3)
-      : 'https://player.vimeo.com/video/' + videoId.slice(3);
-    placeholder.outerHTML = '<div class="proj-video-area"><div class="proj-video-label">&#127916; Video</div><div class="proj-video-frame"><iframe src="' + src + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>';
+// Paste-to-embed video URL (id-aware)
+function embedVideo(input, placeholderId) {
+  const val = input.value.trim();
+  let src = null;
+  const ytMatch = val.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+  if (ytMatch) src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0&modestbranding=1';
+  const viMatch = val.match(/vimeo\.com\/(\d+)/);
+  if (viMatch) src = 'https://player.vimeo.com/video/' + viMatch[1];
+  if (src) {
+    const ph = placeholderId ? document.getElementById(placeholderId) : input.closest('.proj-video-placeholder');
+    if (ph) ph.outerHTML = '<div class="proj-video-area"><div class="proj-video-label">&#127916; Video</div><div class="proj-video-frame"><iframe src="' + src + '" frameborder="0" allowfullscreen loading="lazy"></iframe></div></div>';
   }
 }
+
+// Fade-in animation with fallback
+(function() {
+  function revealFades() {
+    const fades = document.querySelectorAll('.fade');
+    if (!('IntersectionObserver' in window)) {
+      fades.forEach(el => el.classList.add('vis'));
+      return;
+    }
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const siblings = Array.from(e.target.parentNode.children);
+          const idx = siblings.indexOf(e.target);
+          setTimeout(() => e.target.classList.add('vis'), idx * 70);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+    fades.forEach(el => obs.observe(el));
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', revealFades);
+  } else {
+    revealFades();
+  }
+
+  // Nav scroll highlight
+  window.addEventListener('scroll', function() {
+    const secs = document.querySelectorAll('section[id]');
+    const nls = document.querySelectorAll('.nav-links a');
+    let cur = '';
+    secs.forEach(s => { if (window.scrollY >= s.offsetTop - 180) cur = s.id; });
+    nls.forEach(a => { a.style.color = a.getAttribute('href') === '#' + cur ? 'var(--gold-lt)' : ''; });
+  });
+})();
 </script>
+
 
 <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
 
@@ -1048,21 +1171,13 @@ function embedVideo(input) {
       <p>Available for executive consulting, fractional VP Product/Strategy, digital transformation, data monetization, startup GTM, M&amp;A due diligence, and government/defense technology strategy across automotive, mobility, AI/tech, sports, aviation, and defense sectors.</p>
     </div>
     <div class="contact-items">
-      <div class="contact-item fade"><span class="ci-icon">&#128241;</span><div><div class="ci-label">Phone</div><div class="ci-val">(616) 821-8816</div></div></div>
-      <div class="contact-item fade"><span class="ci-icon">&#9993;</span><div><div class="ci-label">Email</div><div class="ci-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="056664777c74706471776a45666a68666476712b6b6071">[email&#160;protected]</a></div></div></div>
+      <div class="contact-item fade"><span class="ci-icon">&#128241;</span><div><div class="ci-label">Phone</div><div class="ci-val"><a href="tel:+16168218816" style="color:var(--white);text-decoration:none">(616) 821-8816</a></div></div></div>
+      <div class="contact-item fade"><span class="ci-icon">&#9993;</span><div><div class="ci-label">Email</div><div class="ci-val"><a href="mailto:caryquatro@comcast.net" style="color:var(--white);text-decoration:none">caryquatro@comcast.net</a></div></div></div>
       <div class="contact-item fade"><span class="ci-icon">&#128205;</span><div><div class="ci-label">Location</div><div class="ci-val">South Lyon / Detroit, Michigan</div></div></div>
-      <div class="contact-item fade"><span class="ci-icon">&#128279;</span><div><div class="ci-label">LinkedIn</div><div class="ci-val">linkedin.com/in/cary-quatro-mba-2286515</div></div></div>
+      <div class="contact-item fade"><span class="ci-icon">&#128279;</span><div><div class="ci-label">LinkedIn</div><div class="ci-val"><a href="https://linkedin.com/in/cary-quatro-mba-2286515" target="_blank" style="color:var(--white);text-decoration:none">linkedin.com/in/cary-quatro-mba-2286515</a></div></div></div>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-brand">Cary Quatro, MBA</div>
-  <div class="footer-copy">Technology Pioneer &nbsp;&middot;&nbsp; 20+ Years &nbsp;&middot;&nbsp; Detroit, MI &nbsp;&middot;&nbsp; 3 US Patents &nbsp;&middot;&nbsp; Automotive &middot; Defense &middot; Sports &middot; Aviation</div>
-</footer>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){const s=Array.from(e.target.parentNode.children);const i=s.indexOf(e.target);setTimeout(()=>e.target.classList.add('vis'),i*70);obs.unobserve(e.target);}});},{threshold:0.08});
-document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
-const secs=document.querySelectorAll('section[id]');
-const nls=document.querySelectorAll('.nav-l
+  <div class="footer-brand">
