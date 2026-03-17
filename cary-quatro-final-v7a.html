@@ -59,7 +59,7 @@ section{padding:6rem 5rem;position:relative}
 .spotlight-left p{font-size:1rem;color:var(--steel);line-height:1.8}
 .spotlight-bullets{display:flex;flex-direction:column;gap:.7rem;margin-top:2rem}
 .spotlight-bullet{padding:1rem 1.4rem;border:1px solid var(--border);background:var(--panel);font-size:.95rem;color:var(--silver);line-height:1.65;position:relative;padding-left:2.2rem;transition:all .3s}
-.spotlight-bullet::before{content:'&#8594;';position:absolute;left:.8rem;color:var(--gold);font-size:.85rem;top:1.05rem}
+.spotlight-bullet::before{content:'→';position:absolute;left:.8rem;color:var(--gold);font-size:.85rem;top:1.05rem}
 .spotlight-bullet:hover{border-color:var(--border-hi);background:rgba(201,169,110,.04)}
 .spotlight-right{display:flex;flex-direction:column;gap:1.2rem}
 .startup-card{border:1px solid var(--border);background:var(--card);padding:1.8rem 2rem;transition:all .35s}
@@ -109,7 +109,7 @@ section{padding:6rem 5rem;position:relative}
 .tl-desc{font-size:.95rem;color:var(--steel);line-height:1.75}
 .tl-bullets{margin-top:1rem;display:flex;flex-direction:column;gap:.35rem}
 .tl-bullet{font-size:.9rem;color:var(--silver);padding-left:1.2rem;position:relative;line-height:1.6}
-.tl-bullet::before{content:'&#8212;';position:absolute;left:0;color:var(--gold);font-size:.7rem;top:.1rem}
+.tl-bullet::before{content:'-';position:absolute;left:0;color:var(--gold);font-size:.7rem;top:.1rem}
 .philosophy{background:var(--ink)}
 .phil-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3rem;margin-top:3.5rem}
 .phil-card{position:relative;padding-top:1.5rem}
@@ -194,9 +194,9 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
 .projects-sec{background:var(--deep);border-top:1px solid var(--border)}
 .proj-intro{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.12em;color:var(--steel);margin-bottom:2rem}
 .proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2rem}
-.proj-card{border:1px solid var(--border);background:var(--panel);color:inherit;display:flex;flex-direction:column;transition:border-color .3s;overflow:hidden;cursor:pointer}
+.proj-card{border:1px solid var(--border);background:var(--panel);color:inherit;display:flex;flex-direction:column;transition:border-color .3s;cursor:pointer}
 .proj-card:hover{border-color:var(--border-hi)}
-.proj-card.open{border-color:var(--gold);grid-column:span 3;flex-direction:row;align-items:stretch;gap:0}
+.proj-card.open{border-color:var(--gold);grid-column:1/-1;flex-direction:row;align-items:stretch;gap:0;overflow:visible}
 .proj-card.open .proj-thumb{width:240px;flex-shrink:0;min-height:220px;border-radius:0;align-items:center;justify-content:center}
 .proj-card.open .proj-expand-hint{display:none}
 .proj-thumb{height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;position:relative;overflow:hidden;transition:all .35s}
@@ -215,8 +215,9 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
 .proj-aws{background:linear-gradient(135deg,#0f1b0f,#1b3a1b)}
 .proj-scoutus{background:linear-gradient(135deg,#1a1a2a,#2a1a0a)}
 .proj-defense{background:linear-gradient(135deg,#100808,#200a0a)}
+.proj-tcs{background:linear-gradient(135deg,#001a0a,#003a20)}
 .proj-speedshift{background:linear-gradient(135deg,#0a1a0a,#1a2a1a)}
-.proj-info{padding:1.5rem 1.8rem;flex:1;display:flex;flex-direction:column;gap:.5rem}
+.proj-info{padding:1.5rem 1.8rem;flex:1;display:flex;flex-direction:column;gap:.5rem;min-width:0}
 .proj-tag{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
 .proj-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--white)}
 .proj-desc{font-size:.9rem;color:var(--steel);line-height:1.7}
@@ -716,14 +717,16 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
           <div class="proj-video-area">
             <div class="proj-video-label">&#127916; FordPass Overview</div>
             <div class="proj-video-frame">
-              <iframe src="https://www.youtube.com/watch?v=o9O6tR8TuG8" title="FordPass" frameborder="0" allowfullscreen loading="lazy"></iframe>
+              <iframe src="https://www.youtube.com/embed/o9O6tR8TuG8?rel=0&modestbranding=1" title="FordPass" frameborder="0" allowfullscreen loading="lazy"></iframe>
             </div>
           </div>
           <a class="proj-link-btn" href="https://www.fordpro.com/en-us/" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit FordPass &rarr;</a>
-        </div>
-      </div>
+        </div><!-- /proj-expanded -->
+      </div><!-- /proj-info -->
+    </div><!-- /proj-card -->
+    </div><!-- extra close -->
 
-     <!-- HARMAN -->
+    <!-- HARMAN -->
     <div class="proj-card fade" onclick="toggleProj(this)">
       <div class="proj-thumb proj-harman" id="logo-harman"> 
       <div class="proj-dual-logos">
@@ -742,7 +745,7 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
             <div class="proj-video-area">
               <div class="proj-video-label">&#127916; HARMAN IGNITE</div>
               <div class="proj-video-frame">
-              <iframe src="https://youtu.be/QvpXlEZx4B0" title="HARMAN IGNITE" frameborder="0" allowfullscreen loading="lazy"></iframe>
+              <iframe src="https://www.youtube.com/embed/QvpXlEZx4B0?rel=0&modestbranding=1" title="HARMAN IGNITE" frameborder="0" allowfullscreen loading="lazy"></iframe>
             </div>
           </div>
           <a class="proj-link-btn" href="https://www.harman.com/" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit HARMAN IGNITE &rarr;</a>
@@ -769,7 +772,7 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
              <div class="proj-video-area">
               <div class="proj-video-label">&#127916; Data Monetization Lifecycle through TCS</div>
               <div class="proj-video-frame">
-              <iframe src="https://youtu.be/fUdxiosT5UY" title="TCS Consultancy" frameborder="0" allowfullscreen loading="lazy"></iframe>
+              <iframe src="https://www.youtube.com/embed/fUdxiosT5UY?rel=0&modestbranding=1" title="TCS Consultancy" frameborder="0" allowfullscreen loading="lazy"></iframe>
             </div>
           </div>
           <a class="proj-link-btn" href="https://www.youtube.com/watch?v=ZN3H2A__ztc" target="_blank" rel="noopener" onclick="event.stopPropagation()">TCS and AWS Automotive &rarr;</a>
@@ -779,9 +782,10 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
 
     <!-- SCOUTUS -->
     <div class="proj-card fade" onclick="toggleProj(this)">
-      <div class="proj-thumb proj-scoutus" id="logo-scoutus">
-        <span class="proj-thumb-icon" id="icon-scoutus">&#127942;</span>
-        <div class="proj-thumb-label">ScoutUS</div>
+      <div class="proj-dual-logos">
+         <img src="Images/ScoutUsLight.png" alt="ScoutUS Pro" class="proj-logo-img" id="icon-auto-gs">   
+         <img src="Images/ScoutUS Logo.jpeg" alt="ScoutUS College" class="proj-logo-img" id="icon-auto-gs"> 
+        </div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
       <div class="proj-info">
@@ -790,26 +794,36 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <p class="proj-desc">Director of Partnerships for a collegiate and professional scouting platform &mdash; building athlete partnerships across MLB, NFL, NBA, and NHL. Customers include universities, e-Sports/Evil Genius, and professional teams.</p>
         <div class="proj-expanded">
           <div class="proj-logo-row">
-            <label class="logo-upload-btn" onclick="event.stopPropagation()" title="Add logo">
-              &#43; Logo <input type="file" accept="image/*" onchange="uploadLogo(this,'logo-scoutus','icon-scoutus')" style="display:none">
-            </label>
+             <img src="Images/ScoutUS Logo.jpeg">
           </div>
-          <div class="proj-video-placeholder" id="vph-scoutus">
-            <span>&#127916;</span>
-            <div class="proj-video-ph-text">Paste a YouTube or Vimeo URL to embed a demo video</div>
-            <input class="proj-video-input" type="text" placeholder="https://youtube.com/watch?v=..." onclick="event.stopPropagation()" oninput="embedVideo(this,'vph-scoutus')">
+  <div class="proj-dual-video">
+            <div class="proj-video-area">
+              <div class="proj-video-label">&#127916; ScoutUS - College and Pro Recruiting</div>
+              <div class="proj-video-frame">
+                <iframe src="https://stream.mux.com/v4zgWruKG17DU02002MGqCmgh01BydLsktk00z12C01htVC4.m3u8?redundant_streams=true" title="ScoutUS College" frameborder="0" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
+            <div class="proj-video-area">
+              <div class="proj-video-label">&#127916; Decision Sciences — Container Scanning</div>
+              <div class="proj-video-frame">
+                <iframe src="https://stream.mux.com/v4zgWruKG17DU02002MGqCmgh01BydLsktk00z12C01htVC4.m3u8?redundant_streams=true" title="ScoutUS Pro" frameborder="0" allowfullscreen loading="lazy"></iframe>
+              </div>
+            </div>
           </div>
-          <a class="proj-link-btn" href="https://www.linkedin.com/in/cary-quatro-mba-2286515" target="_blank" rel="noopener" onclick="event.stopPropagation()">Connect on LinkedIn &rarr;</a>
-        </div>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap">
+            <a class="proj-link-btn" href="https://scoutuscollege.com/" target="_blank" rel="noopener" onclick="event.stopPropagation()">ScoutUS COllege &rarr;</a>
+            <a class="proj-link-btn" href="https://www.scoutuspro.com/.com" target="_blank" rel="noopener" onclick="event.stopPropagation()">ScoutUS Pro &rarr;</a>
+          </div>
       </div>
     </div>
-
+  </div>
     <!-- DECISION SCIENCES / GUNSENS — logos embedded -->
     <div class="proj-card fade" onclick="toggleProj(this)">
       <div class="proj-thumb proj-defense" id="logo-defense">
         <div class="proj-dual-logos">
-          <img src="Images/GunSens.png" alt="Gunsens" class="proj-logo-img" id="icon-defense-gs">
-         </div>
+         <img src="Images/GunSens.png" alt="Gunsens" class="proj-logo-img" id="icon-auto-gs">   
+         <img src="Images/DSwhite-logo.png" alt="Decision Sciences" class="proj-logo-img" id="icon-auto-gs"> 
+        </div>
         <div class="proj-expand-hint">&#9660; Expand</div>
       </div>
       <div class="proj-info">
@@ -818,7 +832,7 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
         <p class="proj-desc">AI-based active shooter detection (Gunsens) and Los Alamos-developed container scanning (Decision Sciences) for ports, borders, stadiums, and infrastructure &mdash; serving USG, Singapore, and UAE.</p>
         <div class="proj-expanded">
           <div class="proj-logo-row proj-logo-row--static">
-            <img src="Images/Gunsens.png">
+            <img src="data:image/png;base64,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">
                       </div>
           <div class="proj-dual-video">
             <div class="proj-video-area">
@@ -865,11 +879,11 @@ footer{padding:2.2rem 5rem;border-top:1px solid var(--border);display:flex;justi
             <input class="proj-video-input" type="text" placeholder="https://youtube.com/watch?v=..." onclick="event.stopPropagation()" oninput="embedVideo(this,'vph-speedshift')">
           </div>
           <a class="proj-link-btn" href="https://www.linkedin.com/in/cary-quatro-mba-2286515" target="_blank" rel="noopener" onclick="event.stopPropagation()">Connect on LinkedIn &rarr;</a>
-        </div>
-      </div>
-    </div>
+        </div><!-- /proj-expanded -->
+      </div><!-- /proj-info -->
+    </div><!-- /proj-card -->
 
-  </div>
+  </div><!-- /proj-grid -->
 </section>
 
 
@@ -1108,15 +1122,20 @@ function uploadLogo(input, thumbId, iconId) {
 
 // Paste-to-embed video URL (id-aware)
 function embedVideo(input, placeholderId) {
-  const val = input.value.trim();
-  let src = null;
-  const ytMatch = val.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
-  if (ytMatch) src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0&modestbranding=1';
-  const viMatch = val.match(/vimeo\.com\/(\d+)/);
-  if (viMatch) src = 'https://player.vimeo.com/video/' + viMatch[1];
+  var val = input.value.trim();
+  var src = null;
+  var yt = val.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)+([\w-]{11})/);
+  if (yt) src = 'https://www.youtube.com/embed/' + yt[1] + '?rel=0&modestbranding=1';
+  var vi = val.match(/vimeo\.com\/(\d+)/);
+  if (vi) src = 'https://player.vimeo.com/video/' + vi[1];
   if (src) {
-    const ph = placeholderId ? document.getElementById(placeholderId) : input.closest('.proj-video-placeholder');
-    if (ph) ph.outerHTML = '<div class="proj-video-area"><div class="proj-video-label">&#127916; Video</div><div class="proj-video-frame"><iframe src="' + src + '" frameborder="0" allowfullscreen loading="lazy"></iframe></div></div>';
+    var ph = placeholderId ? document.getElementById(placeholderId) : input.closest('.proj-video-placeholder');
+    if (ph) {
+      var div = document.createElement('div');
+      div.className = 'proj-video-area';
+      div.innerHTML = '<div class="proj-video-label">&#127916; Video</div><div class="proj-video-frame"><iframe src="' + src + '" frameborder="0" allowfullscreen loading="lazy"></iframe></div>';
+      ph.parentNode.replaceChild(div, ph);
+    }
   }
 }
 
@@ -1171,10 +1190,19 @@ function embedVideo(input, placeholderId) {
       <div class="contact-item fade"><span class="ci-icon">&#128241;</span><div><div class="ci-label">Phone</div><div class="ci-val"><a href="tel:+16168218816" style="color:var(--white);text-decoration:none">(616) 821-8816</a></div></div></div>
       <div class="contact-item fade"><span class="ci-icon">&#9993;</span><div><div class="ci-label">Email</div><div class="ci-val"><a href="mailto:caryquatro@comcast.net" style="color:var(--white);text-decoration:none">caryquatro@comcast.net</a></div></div></div>
       <div class="contact-item fade"><span class="ci-icon">&#128205;</span><div><div class="ci-label">Location</div><div class="ci-val">South Lyon / Detroit, Michigan</div></div></div>
-      <div class="contact-item fade"><span class="ci-icon">&#128279;</span><div><div class="ci-label">LinkedIn</div><div class="ci-val"><a href="https://linkedin.com/in/cary-quatro-mba-2286515" target="_blank" style="color:var(--white);text-decoration:none">linkedin.com/in/cary-quatro-mba-2286515</a></div></div></div>
-    </div>
-  </div>
-</section>
+      <div class="contact-item fade"><span class="ci-icon">&#128279;</span><div><div class="ci-label">LinkedIn</div><div class="ci-val"><a href="https://linkedin.com/in/cary-quatro-mba-2286515" target="_blank" rel="noopener" style="color:var(--white);text-decoration:none">linkedin.com/in/cary-quatro-mba-2286515</a></div></div></div>
+    </div><!-- /contact-items -->
+  </div><!-- /contact-grid -->
+</section><!-- /contact -->
 
 <footer>
-  <div class="footer-brand">
+  <span style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--steel)">
+    &copy; 2025 Cary Quatro, MBA &nbsp;&middot;&nbsp; Qu4tro Labs &nbsp;&middot;&nbsp; All Rights Reserved
+  </span>
+  <span style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--steel)">
+    3 US Patents &nbsp;&middot;&nbsp; Inventor of Mobile Tablet OS (2005)
+  </span>
+</footer>
+</body>
+</html>
+
