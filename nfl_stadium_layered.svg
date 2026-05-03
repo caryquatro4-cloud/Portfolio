@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  NFL STADIUM — LAYERED FLOORPLAN SVG
+  =====================================
+  Layers (toggle visibility per floor):
+    #layer-field        — Playing field, end zones, yard lines, goal posts
+    #layer-field-level  — Field-level seating (Sections F1–F70), player tunnel, locker rooms
+    #layer-lower-bowl   — Lower bowl seating (Sections 100–240), aisles, vomitories
+    #layer-club-suite   — Club seats (C100–C130) and luxury suites (1–40)
+    #layer-upper-deck   — Upper deck (Sections 300–380), main concourses
+    #layer-amenities    — Gates A–D, concessions, restrooms, press box, team store, medical
+    #layer-structure    — Outer shell, compass, legend, title
+
+  Usage:
+    Show/hide a floor:  document.getElementById('layer-upper-deck').style.display = 'none';
+    Toggle opacity:     document.getElementById('layer-club-suite').style.opacity = '0.3';
+    SVG layer order (bottom to top): structure → field → field-level → lower-bowl → club-suite → upper-deck → amenities
+-->
+<svg
+  id="stadium-svg"
+  width="680"
+  height="820"
+  viewBox="0 0 680 820"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img">
+
+  <title>NFL Stadium — Layered Floorplan</title>
+  <desc>Multi-layer top-down floorplan of an NFL stadium. Each floor is a named SVG group layer for use in digital twin applications.</desc>
+
+  <defs>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; }
+      .layer-label { font-size: 8px; fill: #888; letter-spacing: 0.5px; }
+    </style>
+
+    <!-- Grass texture -->
+    <pattern id="grass" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#2d7a3a"/>
+      <rect x="0" y="0" width="10" height="20" fill="#2a7237" opacity="0.5"/>
+    </pattern>
+
+    <!-- Hatching for concourse walkways -->
+    <pattern id="concourse-hatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#4a4870"/>
+      <line x1="0" y1="8" x2="8" y2="0" stroke="#3C3489" stroke-width="1" opacity="0.5"/>
+    </pattern>
+
+    <!-- Arrow marker -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="10" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L5 10 L10 0 Z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- ══════════════════════════════════════════════════════
+       LAYER 0 — STRUCTURE (outer shell, background, title)
+       id: layer-structure
+       ══════════════════════════════════════════════════════ -->
+  <g id="layer-structure" inkscape:label="Structure" inkscape:groupmode="layer">
+
+    <!-- Page background -->
+    <rect width="680" height="820" fill="#f0eeea"/>
+
+    <!-- Outer stadium footprint -->
+    <ellipse cx="340" cy="400" rx="320" ry="368" fill="#d6d4ce" stroke="#aaa" stroke-width="1.5"/>
+
+    <!-- Title block -->
+    <rect x="20" y="6" width="640" height="28" rx="4" fill="#1e1d1b"/>
+    <text x="340" y="25" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">NFL STADIUM — LAYERED DIGITAL TWIN FLOORPLAN</text>
+
+    <!-- Layer key header -->
+    <text x="340" y="810" text-anchor="middle" font-size="9" fill="#888">Layer IDs: layer-structure · layer-field · layer-field-level · layer-lower-bowl · layer-club-suite · layer-upper-deck · layer-amenities</text>
+
+    <!-- Compass rose -->
+    <g transform="translate(638,768)">
+      <circle r="14" fill="#1e1d1b" opacity="0.08"/>
+      <text x="0" y="-5" text-anchor="middle" font-size="9" font-weight="700" fill="#333">N</text>
+      <line x1="0" y1="-2" x2="0" y2="8" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+    </g>
+
+  </g><!-- /layer-structure -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       LAYER 1 — PLAYING FIELD
+       id: layer-field
+       Includes: grass, end zones, yard lines, hash marks,
+                 mid-field logo circle, goal posts
+       ══════════════════════════════════════════════════════ -->
+  <g id="layer-field" inkscape:label="Playing Field" inkscape:groupmode="layer">
+
+    <!-- Grass -->
+    <rect x="185" y="252" width="310" height="296" rx="4" fill="url(#grass)"/>
+
+    <!-- End zones (darker green) -->
+    <rect x="185" y="252" width="310" height="42" rx="4" fill="#1a5c28"/>
+    <rect x="185" y="506" width="310" height="42" rx="4" fill="#1a5c28"/>
+
+    <!-- End zone text -->
+    <text x="340" y="279" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.9" letter-spacing="3">END ZONE</text>
+    <text x="340" y="531" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.9" letter-spacing="3">END ZONE</text>
+
+    <!-- Yard lines (9 interior lines = 10-yd increments) -->
+    <line x1="216" y1="294" x2="216" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+    <line x1="247" y1="294" x2="247" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+    <line x1="278" y1="294" x2="278" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+    <line x1="309" y1="294" x2="309" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+    <!-- 50 yard line -->
+    <line x1="340" y1="294" x2="340" y2="506" stroke="#fff" stroke-width="1.2" opacity="0.7"/>
+    <line x1="371" y1="294" x2="371" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+    <line x1="402" y1="294" x2="402" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+    <line x1="433" y1="294" x2="433" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+    <line x1="464" y1="294" x2="464" y2="506" stroke="#fff" stroke-width="0.6" opacity="0.45"/>
+
+    <!-- Hash marks (simplified, 2 sets) -->
+    <line x1="185" y1="400" x2="495" y2="400" stroke="#fff" stroke-width="0.4" opacity="0.25"/>
+
+    <!-- Mid-field logo circle -->
+    <circle cx="340" cy="400" r="22" fill="none" stroke="#fff" stroke-width="1" opacity="0.5"/>
+    <text x="340" y="397" text-anchor="middle" font-size="7" fill="#fff" opacity="0.6">HOME</text>
+    <text x="340" y="406" text-anchor="middle" font-size="7" fill="#fff" opacity="0.6">TEAM</text>
+
+    <!-- Goal posts (north end zone) -->
+    <line x1="340" y1="252" x2="340" y2="244" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    <line x1="328" y1="244" x2="352" y2="244" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    <line x1="328" y1="244" x2="328" y2="238" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    <line x1="352" y1="244" x2="352" y2="238" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    <!-- Goal posts (south end zone) -->
+    <line x1="340" y1="548" x2="340" y2="556" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    <line x1="328" y1="556" x2="352" y2="556" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    <line x1="328" y1="556" x2="328" y2="562" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    <line x1="352" y1="556" x2="352" y2="562" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Field outline -->
+    <rect x="185" y="252" width="310" height="296" rx="4" fill="none" stroke="#fff" stroke-width="1.2"/>
+
+    <!-- Layer watermark -->
+    <text x="496" y="270" font-size="7" fill="#1a5c28" opacity="0.6">layer-field</text>
+
+  </g><!-- /layer-field -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       LAYER 2 — FIELD LEVEL
+       id: layer-field-level
+       Includes: field-level seating F1–F70, player tunnel,
+                 locker room access, sideline benches
+       ══════════════════════════════════════════════════════ -->
+  <g id="layer-field-level" inkscape:label="Field Level" inkscape:groupmode="layer">
+
+    <!-- West field-level seats (F1–F15) -->
+    <path d="M160 305 L185 318 L185 482 L160 495 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+    <text x="172" y="402" text-anchor="middle" font-size="7" fill="#26215C" transform="rotate(-90,172,402)">F1–F15  Field Level W</text>
+
+    <!-- East field-level seats (F16–F30) -->
+    <path d="M520 305 L495 318 L495 482 L520 495 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+    <text x="508" y="402" text-anchor="middle" font-size="7" fill="#26215C" transform="rotate(90,508,402)">F16–F30  Field Level E</text>
+
+    <!-- North field-level seats (F40–F55) -->
+    <path d="M225 252 L460 252 L455 232 L230 232 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+    <text x="340" y="245" text-anchor="middle" font-size="7" fill="#26215C">F40–F55  Field Level N</text>
+
+    <!-- South field-level seats (F56–F70) -->
+    <path d="M225 548 L460 548 L455 568 L230 568 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+    <text x="340" y="562" text-anchor="middle" font-size="7" fill="#26215C">F56–F70  Field Level S</text>
+
+    <!-- Player tunnel (south) -->
+    <rect x="316" y="568" width="48" height="18" rx="3" fill="#26215C" stroke="#AFA9EC" stroke-width="0.5"/>
+    <text x="340" y="580" text-anchor="middle" font-size="7" font-weight="600" fill="#fff">Player Tunnel</text>
+
+    <!-- Sideline benches West -->
+    <rect x="188" y="360" width="20" height="80" rx="2" fill="#8B7355" stroke="#fff" stroke-width="0.3" opacity="0.8"/>
+    <text x="198" y="402" text-anchor="middle" font-size="6" fill="#fff" transform="rotate(-90,198,402)">Home Bench</text>
+
+    <!-- Sideline benches East -->
+    <rect x="472" y="360" width="20" height="80" rx="2" fill="#5a6e8a" stroke="#fff" stroke-width="0.3" opacity="0.8"/>
+    <text x="482" y="402" text-anchor="middle" font-size="6" fill="#fff" transform="rotate(90,482,402)">Away Bench</text>
+
+    <!-- Layer watermark -->
+    <text x="496" y="282" font-size="7" fill="#4a4070" opacity="0.6">layer-field-level</text>
+
+  </g><!-- /layer-field-level -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       LAYER 3 — LOWER BOWL
+       id: layer-lower-bowl
+       Includes: sections 100–240, corner sections,
+                 aisle markings, vomitory access points
+       ══════════════════════════════════════════════════════ -->
+  <g id="layer-lower-bowl" inkscape:label="Lower Bowl" inkscape:groupmode="layer">
+
+    <!-- North lower (Sec 200–210) -->
+    <path d="M192 178 Q340 125 488 178 L470 210 Q340 162 210 210 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- South lower (Sec 228–240) -->
+    <path d="M192 622 Q340 675 488 622 L470 590 Q340 645 210 590 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- West lower sideline (Sec 111–130) -->
+    <path d="M112 268 L142 288 L142 512 L112 530 Q102 400 112 268 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- East lower sideline (Sec 131–150) -->
+    <path d="M568 268 L538 288 L538 512 L568 530 Q578 400 568 268 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- NW corner -->
+    <path d="M112 268 L142 288 L210 210 L192 178 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- NE corner -->
+    <path d="M568 268 L538 288 L470 210 L488 178 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- SW corner -->
+    <path d="M112 530 L142 512 L210 590 L192 622 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- SE corner -->
+    <path d="M568 530 L538 512 L470 590 L488 622 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+
+    <!-- Section labels -->
+    <text x="340" y="197" text-anchor="middle" font-size="8" fill="#fff" opacity="0.95">Sec 200–210  Lower N</text>
+    <text x="340" y="607" text-anchor="middle" font-size="8" fill="#fff" opacity="0.95">Sec 228–240  Lower S</text>
+    <text x="123" y="400" text-anchor="middle" font-size="8" fill="#fff" opacity="0.95" transform="rotate(-90,123,400)">Sec 111–130  Lower W</text>
+    <text x="557" y="400" text-anchor="middle" font-size="8" fill="#fff" opacity="0.95" transform="rotate(90,557,400)">Sec 131–150  Lower E</text>
+
+    <!-- Vomitory access dots (every ~30px along seating rings) -->
+    <!-- North lower vomitories -->
+    <circle cx="260" cy="192" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="310" cy="182" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="370" cy="182" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="420" cy="192" r="3" fill="#FFD700" opacity="0.85"/>
+    <!-- South lower vomitories -->
+    <circle cx="260" cy="607" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="310" cy="617" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="370" cy="617" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="420" cy="607" r="3" fill="#FFD700" opacity="0.85"/>
+    <!-- West vomitories -->
+    <circle cx="121" cy="320" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="120" cy="400" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="121" cy="480" r="3" fill="#FFD700" opacity="0.85"/>
+    <!-- East vomitories -->
+    <circle cx="559" cy="320" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="560" cy="400" r="3" fill="#FFD700" opacity="0.85"/>
+    <circle cx="559" cy="480" r="3" fill="#FFD700" opacity="0.85"/>
+
+    <!-- Vomitory legend note -->
+    <circle cx="192" cy="640" r="3" fill="#FFD700" opacity="0.85"/>
+    <text x="200" y="643" font-size="7" fill="#555">Vomitory / aisle access</text>
+
+    <!-- Layer watermark -->
+    <text x="496" y="294" font-size="7" fill="#4a4070" opacity="0.6">layer-lower-bowl</text>
+
+  </g><!-- /layer-lower-bowl -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       LAYER 4 — CLUB & SUITE LEVEL
+       id: layer-club-suite
+       Includes: club seats C100–C130, suites 1–40,
+                 club lounge, escalator cores
+       ══════════════════════════════════════════════════════ -->
+  <g id="layer-club-suite" inkscape:label="Club and Suite Level" inkscape:groupmode="layer">
+
+    <!-- West club sideline (C100–C115) -->
+    <path d="M142 288 L162 302 L162 498 L142 512 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- East club sideline (C116–C130) -->
+    <path d="M538 288 L518 302 L518 498 L538 512 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- North suites (1–20) -->
+    <path d="M210 210 L470 210 L460 232 L220 232 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+    <!-- South suites (21–40) -->
+    <path d="M210 590 L470 590 L460 568 L220 568 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.6" opacity="0.95"/>
+
+    <!-- Suite divider lines (North — 20 suites) -->
+    <line x1="235" y1="210" x2="233" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="260" y1="210" x2="257" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="285" y1="210" x2="282" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="310" y1="210" x2="308" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="335" y1="210" x2="334" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="360" y1="210" x2="360" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="385" y1="210" x2="386" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="410" y1="210" x2="412" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="435" y1="210" x2="438" y2="232" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+
+    <!-- Suite divider lines (South) -->
+    <line x1="235" y1="590" x2="233" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="260" y1="590" x2="257" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="285" y1="590" x2="282" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="310" y1="590" x2="308" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="335" y1="590" x2="334" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="360" y1="590" x2="360" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="385" y1="590" x2="386" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="410" y1="590" x2="412" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+    <line x1="435" y1="590" x2="438" y2="568" stroke="#fff" stroke-width="0.4" opacity="0.5"/>
+
+    <!-- Section labels -->
+    <text x="340" y="224" text-anchor="middle" font-size="8" fill="#4A2402" opacity="0.95">Suites 1–20  North</text>
+    <text x="340" y="583" text-anchor="middle" font-size="8" fill="#4A2402" opacity="0.95">Suites 21–40  South</text>
+    <text x="152" y="400" text-anchor="middle" font-size="7" fill="#4A2402" opacity="0.95" transform="rotate(-90,152,400)">Club W  C100–C115</text>
+    <text x="528" y="400" text-anchor="middle" font-size="7" fill="#4A2402" opacity="0.95" transform="rotate(90,528,400)">Club E  C116–C130</text>
+
+    <!-- Club lounge (West midpoint) -->
+    <rect x="144" y="362" width="16" height="76" rx="3" fill="#BA7517" stroke="#fff" stroke-width="0.4" opacity="0.9"/>
+    <text x="152" y="400" font-size="6" fill="#fff" opacity="0.9" transform="rotate(-90,152,400)">Club Lounge</text>
+
+    <!-- Escalator cores (small squares) -->
+    <rect x="212" y="213" width="10" height="10" rx="2" fill="#fff" stroke="#BA7517" stroke-width="0.8"/>
+    <text x="217" y="221" text-anchor="middle" font-size="6" fill="#BA7517">E</text>
+    <rect x="458" y="213" width="10" height="10" rx="2" fill="#fff" stroke="#BA7517" stroke-width="0.8"/>
+    <text x="463" y="221" text-anchor="middle" font-size="6" fill="#BA7517">E</text>
+    <rect x="212" y="577" width="10" height="10" rx="2" fill="#fff" stroke="#BA7517" stroke-width="0.8"/>
+    <text x="217" y="585" text-anchor="middle" font-size="6" fill="#BA7517">E</text>
+    <rect x="458" y="577" width="10" height="10" rx="2" fill="#fff" stroke="#BA7517" stroke-width="0.8"/>
+    <text x="463" y="585" text-anchor="middle" font-size="6" fill="#BA7517">E</text>
+
+    <!-- Layer watermark -->
+    <text x="496" y="306" font-size="7" fill="#7a5000" opacity="0.6">layer-club-suite</text>
+
+  </g><!-- /layer-club-suite -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       LAYER 5 — UPPER DECK
+       id: layer-upper-deck
+       Includes: sections 300–380, main concourse ring,
+                 upper concourse walkways
+       ══════════════════════════════════════════════════════ -->
+  <g id="layer-upper-deck" inkscape:label="Upper Deck" inkscape:groupmode="layer">
+
+    <!-- Main concourse ring (hatched) -->
+    <!-- North concourse -->
+    <path d="M172 155 Q340 95 508 155 L488 178 Q340 125 192 178 Z" fill="url(#concourse-hatch)" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+    <!-- South concourse -->
+    <path d="M172 645 Q340 705 508 645 L488 622 Q340 675 192 622 Z" fill="url(#concourse-hatch)" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+    <!-- West concourse -->
+    <path d="M82 238 L112 268 L112 530 L82 560 Q68 400 82 238 Z" fill="url(#concourse-hatch)" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+    <!-- East concourse -->
+    <path d="M598 238 L568 268 L568 530 L598 560 Q612 400 598 238 Z" fill="url(#concourse-hatch)" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+
+    <!-- Upper deck seating — North -->
+    <path d="M132 108 Q340 38 548 108 L508 155 Q340 95 172 155 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+    <!-- Upper deck seating — South -->
+    <path d="M132 692 Q340 762 548 692 L508 645 Q340 705 172 645 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+    <!-- Upper deck seating — West -->
+    <path d="M32 210 Q22 400 32 590 L82 560 Q68 400 82 238 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+    <!-- Upper deck seating — East -->
+    <path d="M648 210 Q658 400 648 590 L598 560 Q612 400 598 238 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+    <!-- NW corner -->
+    <path d="M82 238 L132 108 L172 155 L112 268 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+    <!-- NE corner -->
+    <path d="M598 238 L548 108 L508 155 L568 268 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+    <!-- SW corner -->
+    <path d="M82 560 L132 692 L172 645 L112 530 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+    <!-- SE corner -->
+    <path d="M598 560 L548 692 L508 645 L568 530 Z" fill="#534AB7" stroke="#fff" stroke-width="0.6" opacity="0.9"/>
+
+    <!-- Section labels -->
+    <text x="340" y="120" text-anchor="middle" font-size="8" fill="#fff" opacity="0.9">Sec 300–320  Upper N</text>
+    <text x="340" y="680" text-anchor="middle" font-size="8" fill="#fff" opacity="0.9">Sec 361–380  Upper S</text>
+    <text x="54" y="400" text-anchor="middle" font-size="8" fill="#fff" opacity="0.9" transform="rotate(-90,54,400)">Sec 321–340  Upper W</text>
+    <text x="626" y="400" text-anchor="middle" font-size="8" fill="#fff" opacity="0.9" transform="rotate(90,626,400)">Sec 341–360  Upper E</text>
+
+    <!-- Concourse labels -->
+    <text x="340" y="170" text-anchor="middle" font-size="7" fill="#ccc" opacity="0.8">Main Concourse N</text>
+    <text x="340" y="633" text-anchor="middle" font-size="7" fill="#ccc" opacity="0.8">Main Concourse S</text>
+    <text x="95" y="400" text-anchor="middle" font-size="7" fill="#ccc" opacity="0.8" transform="rotate(-90,95,400)">Concourse W</text>
+    <text x="585" y="400" text-anchor="middle" font-size="7" fill="#ccc" opacity="0.8" transform="rotate(90,585,400)">Concourse E</text>
+
+    <!-- Layer watermark -->
+    <text x="496" y="318" font-size="7" fill="#26215C" opacity="0.6">layer-upper-deck</text>
+
+  </g><!-- /layer-upper-deck -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       LAYER 6 — AMENITIES
+       id: layer-amenities
+       Includes: Gates A–D, concessions (x4), restrooms (x4),
+                 press box, locker rooms, team store, medical
+       ══════════════════════════════════════════════════════ -->
+  <g id="layer-amenities" inkscape:label="Amenities" inkscape:groupmode="layer">
+
+    <!-- ── GATES ── -->
+    <!-- Gate A — North main -->
+    <rect x="290" y="58" width="100" height="30" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.6"/>
+    <text x="340" y="70" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Gate A</text>
+    <text x="340" y="81" text-anchor="middle" font-size="7" fill="#ffd" opacity="0.9">Main North · ADA · Will Call</text>
+
+    <!-- Gate B — South -->
+    <rect x="290" y="714" width="100" height="30" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.6"/>
+    <text x="340" y="726" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Gate B</text>
+    <text x="340" y="737" text-anchor="middle" font-size="7" fill="#ffd" opacity="0.9">South · Will Call · Family Svcs</text>
+
+    <!-- Gate C — West VIP -->
+    <rect x="10" y="375" width="32" height="50" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.6"/>
+    <text x="26" y="397" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" transform="rotate(-90,26,400)">Gate C — West VIP</text>
+
+    <!-- Gate D — East Media -->
+    <rect x="638" y="375" width="32" height="50" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.6"/>
+    <text x="654" y="397" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" transform="rotate(90,654,400)">Gate D — East Media</text>
+
+    <!-- ── CONCESSIONS ── -->
+    <!-- NW -->
+    <rect x="88" y="165" width="72" height="32" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5"/>
+    <text x="124" y="178" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Concessions</text>
+    <text x="124" y="190" text-anchor="middle" font-size="7" fill="#ffd" opacity="0.9">NW  ·  8 POS</text>
+    <!-- NE -->
+    <rect x="520" y="165" width="72" height="32" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5"/>
+    <text x="556" y="178" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Concessions</text>
+    <text x="556" y="190" text-anchor="middle" font-size="7" fill="#ffd" opacity="0.9">NE  ·  Mobile Pickup</text>
+    <!-- SW -->
+    <rect x="88" y="580" width="72" height="32" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5"/>
+    <text x="124" y="593" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Concessions</text>
+    <text x="124" y="605" text-anchor="middle" font-size="7" fill="#ffd" opacity="0.9">SW  ·  Full Bar  ·  10 POS</text>
+    <!-- SE -->
+    <rect x="520" y="580" width="72" height="32" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5"/>
+    <text x="556" y="593" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Concessions</text>
+    <text x="556" y="605" text-anchor="middle" font-size="7" fill="#ffd" opacity="0.9">SE  ·  Kids Menu</text>
+
+    <!-- ── RESTROOMS ── -->
+    <!-- W upper -->
+    <rect x="36" y="300" width="46" height="28" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5"/>
+    <text x="59" y="312" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">Restrooms</text>
+    <text x="59" y="322" text-anchor="middle" font-size="7" fill="#cde" opacity="0.9">W · Upper · ADA</text>
+    <!-- E upper -->
+    <rect x="598" y="300" width="46" height="28" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5"/>
+    <text x="621" y="312" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">Restrooms</text>
+    <text x="621" y="322" text-anchor="middle" font-size="7" fill="#cde" opacity="0.9">E · Upper · ADA</text>
+    <!-- W lower -->
+    <rect x="36" y="460" width="46" height="28" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5"/>
+    <text x="59" y="472" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">Restrooms</text>
+    <text x="59" y="482" text-anchor="middle" font-size="7" fill="#cde" opacity="0.9">W · Lower · ADA</text>
+    <!-- E lower -->
+    <rect x="598" y="460" width="46" height="28" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5"/>
+    <text x="621" y="472" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">Restrooms</text>
+    <text x="621" y="482" text-anchor="middle" font-size="7" fill="#cde" opacity="0.9">E · Lower · ADA</text>
+
+    <!-- ── PRESS BOX ── -->
+    <rect x="546" y="382" width="54" height="36" rx="5" fill="#0F6E56" stroke="#fff" stroke-width="0.5"/>
+    <text x="573" y="396" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Press Box</text>
+    <text x="573" y="408" text-anchor="middle" font-size="7" fill="#aef" opacity="0.9">TV · Radio · Stats</text>
+
+    <!-- ── LOCKER ROOMS ── -->
+    <rect x="88" y="618" width="72" height="36" rx="5" fill="#27500A" stroke="#fff" stroke-width="0.5"/>
+    <text x="124" y="632" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Locker Rooms</text>
+    <text x="124" y="644" text-anchor="middle" font-size="7" fill="#cef" opacity="0.9">Home · Away · Media</text>
+
+    <!-- ── TEAM STORE ── -->
+    <rect x="520" y="618" width="72" height="36" rx="5" fill="#993C1D" stroke="#fff" stroke-width="0.5"/>
+    <text x="556" y="632" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Team Store</text>
+    <text x="556" y="644" text-anchor="middle" font-size="7" fill="#ffd" opacity="0.9">2,800 sq ft  ·  12 POS</text>
+
+    <!-- ── MEDICAL / FIRST AID ── -->
+    <rect x="294" y="748" width="92" height="28" rx="5" fill="#A32D2D" stroke="#fff" stroke-width="0.5"/>
+    <text x="340" y="760" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Medical / First Aid</text>
+    <text x="340" y="771" text-anchor="middle" font-size="7" fill="#fdd" opacity="0.9">EMT Staffed · AED on-site</text>
+
+    <!-- Layer watermark -->
+    <text x="496" y="330" font-size="7" fill="#993C1D" opacity="0.6">layer-amenities</text>
+
+    <!-- ── LEGEND ── -->
+    <rect x="20" y="780" width="640" height="28" rx="4" fill="#1e1d1b" opacity="0.06"/>
+    <!-- Swatches row -->
+    <rect x="28" y="787" width="10" height="10" rx="2" fill="#534AB7"/>
+    <text x="42" y="796" font-size="8" fill="#333">Upper deck</text>
+    <rect x="100" y="787" width="10" height="10" rx="2" fill="#7F77DD"/>
+    <text x="114" y="796" font-size="8" fill="#333">Lower bowl</text>
+    <rect x="178" y="787" width="10" height="10" rx="2" fill="#EF9F27"/>
+    <text x="192" y="796" font-size="8" fill="#333">Club / suites</text>
+    <rect x="258" y="787" width="10" height="10" rx="2" fill="#AFA9EC"/>
+    <text x="272" y="796" font-size="8" fill="#333">Field level</text>
+    <rect x="328" y="787" width="10" height="10" rx="2" fill="#D85A30"/>
+    <text x="342" y="796" font-size="8" fill="#333">Gates</text>
+    <rect x="382" y="787" width="10" height="10" rx="2" fill="#BA7517"/>
+    <text x="396" y="796" font-size="8" fill="#333">Concessions</text>
+    <rect x="460" y="787" width="10" height="10" rx="2" fill="#185FA5"/>
+    <text x="474" y="796" font-size="8" fill="#333">Restrooms</text>
+    <rect x="530" y="787" width="10" height="10" rx="2" fill="#2d7a3a"/>
+    <text x="544" y="796" font-size="8" fill="#333">Field</text>
+    <circle cx="588" cy="792" r="3" fill="#FFD700"/>
+    <text x="596" y="796" font-size="8" fill="#333">Vomitory</text>
+
+    <!-- Escalator key -->
+    <rect x="28" y="800" width="10" height="10" rx="2" fill="#fff" stroke="#BA7517" stroke-width="0.8"/>
+    <text x="34" y="808" text-anchor="middle" font-size="6" fill="#BA7517">E</text>
+    <text x="42" y="808" font-size="8" fill="#333">Escalator core</text>
+
+  </g><!-- /layer-amenities -->
+
+</svg>

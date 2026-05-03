@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:transparent;font-family:var(--font-sans,'Anthropic Sans',sans-serif)}
+#wrap{position:relative;width:100%;padding:0}
+#info-panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:12px 16px;margin:10px 0 4px;min-height:56px;font-size:13px;color:var(--color-text-primary);transition:opacity .2s}
+#info-panel .zone-name{font-size:14px;font-weight:500;margin-bottom:3px}
+#info-panel .zone-desc{color:var(--color-text-secondary);font-size:12px;line-height:1.5}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:6px 0 10px;font-size:12px;color:var(--color-text-secondary)}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+svg .zone{cursor:pointer;transition:opacity .15s}
+svg .zone:hover{opacity:.78}
+svg .zone.active{opacity:.65}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div id="info-panel">
+  <div class="zone-name">NFL Stadium Floorplan</div>
+  <div class="zone-desc">Click any zone to see details. This interactive plan covers the main concourse level with field, seating bowls, gates, and key amenities.</div>
+</div>
+<svg width="100%" viewBox="0 0 680 780" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>NFL Stadium Floorplan — Interactive</title>
+  <desc>Top-down floorplan of an NFL stadium showing field, seating sections, gates, concourses, and amenities.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <!-- Field grass pattern -->
+    <pattern id="grass" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#2d7a3a"/>
+      <rect x="0" y="0" width="10" height="20" fill="#2a7237" opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- ─── OUTER STADIUM SHELL ─── -->
+  <ellipse cx="340" cy="390" rx="320" ry="370" fill="#b5b3ab" opacity="0.18" stroke="#888780" stroke-width="1"/>
+
+  <!-- ─── UPPER DECK (outermost ring) ─── -->
+  <!-- North upper -->
+  <path class="zone" id="z-upper-n" d="M130 100 Q340 30 550 100 L510 145 Q340 85 170 145 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+  <!-- South upper -->
+  <path class="zone" id="z-upper-s" d="M130 680 Q340 750 550 680 L510 635 Q340 705 170 635 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+  <!-- West upper -->
+  <path class="zone" id="z-upper-w" d="M30 200 Q20 390 30 580 L80 550 Q72 390 80 230 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+  <!-- East upper -->
+  <path class="zone" id="z-upper-e" d="M650 200 Q660 390 650 580 L600 550 Q608 390 600 230 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+  <!-- Upper corners -->
+  <path class="zone" id="z-upper-nw" d="M80 230 L130 100 L170 145 L110 260 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+  <path class="zone" id="z-upper-ne" d="M600 230 L550 100 L510 145 L570 260 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+  <path class="zone" id="z-upper-sw" d="M80 550 L130 680 L170 635 L110 520 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+  <path class="zone" id="z-upper-se" d="M600 550 L550 680 L510 635 L570 520 Z" fill="#534AB7" stroke="#fff" stroke-width="0.5" opacity="0.85"/>
+
+  <!-- ─── MAIN CONCOURSE RING ─── -->
+  <!-- North concourse -->
+  <path class="zone" id="z-conc-n" d="M170 145 Q340 85 510 145 L490 168 Q340 115 190 168 Z" fill="#3C3489" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+  <!-- South concourse -->
+  <path class="zone" id="z-conc-s" d="M170 635 Q340 705 510 635 L490 612 Q340 675 190 612 Z" fill="#3C3489" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+  <!-- West concourse -->
+  <path class="zone" id="z-conc-w" d="M80 230 L110 260 L100 520 L80 550 Q65 390 80 230 Z" fill="#3C3489" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+  <!-- East concourse -->
+  <path class="zone" id="z-conc-e" d="M600 230 L570 260 L580 520 L600 550 Q615 390 600 230 Z" fill="#3C3489" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+
+  <!-- ─── LOWER BOWL SEATING ─── -->
+  <!-- North lower (behind end zone) -->
+  <path class="zone" id="z-lower-n" d="M190 168 Q340 115 490 168 L470 200 Q340 155 210 200 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <!-- South lower (behind end zone) -->
+  <path class="zone" id="z-lower-s" d="M190 612 Q340 675 490 612 L470 580 Q340 635 210 580 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <!-- West lower (sideline) -->
+  <path class="zone" id="z-lower-w" d="M110 260 L140 280 L140 500 L110 520 Q100 390 110 260 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <!-- East lower (sideline) -->
+  <path class="zone" id="z-lower-e" d="M570 260 L540 280 L540 500 L570 520 Q580 390 570 260 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <!-- Lower corners -->
+  <path class="zone" id="z-lower-nw" d="M110 260 L140 280 L210 200 L190 168 L110 260 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <path class="zone" id="z-lower-ne" d="M570 260 L540 280 L470 200 L490 168 L570 260 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <path class="zone" id="z-lower-sw" d="M110 520 L140 500 L210 580 L190 612 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <path class="zone" id="z-lower-se" d="M570 520 L540 500 L470 580 L490 612 Z" fill="#7F77DD" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+
+  <!-- ─── CLUB / SUITE LEVEL ─── -->
+  <!-- West club (sideline premium) -->
+  <path class="zone" id="z-club-w" d="M140 280 L160 295 L160 485 L140 500 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <!-- East club (sideline premium) -->
+  <path class="zone" id="z-club-e" d="M540 280 L520 295 L520 485 L540 500 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <!-- North club / suites -->
+  <path class="zone" id="z-club-n" d="M210 200 L470 200 L460 220 L220 220 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+  <!-- South club / suites -->
+  <path class="zone" id="z-club-s" d="M210 580 L470 580 L460 560 L220 560 Z" fill="#EF9F27" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+
+  <!-- ─── FIELD LEVEL SEATING (front rows) ─── -->
+  <path class="zone" id="z-field-seats-w" d="M160 295 L185 308 L185 472 L160 485 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+  <path class="zone" id="z-field-seats-e" d="M520 295 L495 308 L495 472 L520 485 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+  <path class="zone" id="z-field-seats-n" d="M220 220 L460 220 L455 242 L225 242 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+  <path class="zone" id="z-field-seats-s" d="M220 560 L460 560 L455 538 L225 538 Z" fill="#AFA9EC" stroke="#fff" stroke-width="0.3" opacity="0.9"/>
+
+  <!-- ─── PLAYING FIELD ─── -->
+  <rect class="zone" id="z-field" x="185" y="242" width="310" height="296" rx="4" fill="url(#grass)" stroke="#fff" stroke-width="1"/>
+  <!-- Field markings -->
+  <!-- End zones -->
+  <rect x="185" y="242" width="310" height="40" fill="#1a5c28" opacity="0.7"/>
+  <rect x="185" y="498" width="310" height="40" fill="#1a5c28" opacity="0.7"/>
+  <!-- Yard lines (every ~10 yds) -->
+  <line x1="216" y1="282" x2="216" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <line x1="247" y1="282" x2="247" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <line x1="278" y1="282" x2="278" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <line x1="309" y1="282" x2="309" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <line x1="340" y1="282" x2="340" y2="498" stroke="#fff" stroke-width="0.8" opacity="0.6"/>
+  <line x1="371" y1="282" x2="371" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <line x1="402" y1="282" x2="402" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <line x1="433" y1="282" x2="433" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <line x1="464" y1="282" x2="464" y2="498" stroke="#fff" stroke-width="0.5" opacity="0.4"/>
+  <!-- Hashmarks -->
+  <line x1="185" y1="390" x2="495" y2="390" stroke="#fff" stroke-width="0.5" opacity="0.3"/>
+  <!-- End zone labels -->
+  <text x="340" y="268" text-anchor="middle" font-size="11" font-weight="500" fill="#fff" opacity="0.9" font-family="var(--font-sans)">END ZONE</text>
+  <text x="340" y="520" text-anchor="middle" font-size="11" font-weight="500" fill="#fff" opacity="0.9" font-family="var(--font-sans)">END ZONE</text>
+
+  <!-- ─── GATES (entrances) ─── -->
+  <!-- Gate A - North -->
+  <rect class="zone" id="z-gate-a" x="290" y="52" width="100" height="30" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.5"/>
+  <text x="340" y="72" text-anchor="middle" font-size="11" font-weight="500" fill="#fff" font-family="var(--font-sans)">Gate A</text>
+  <!-- Gate B - South -->
+  <rect class="zone" id="z-gate-b" x="290" y="698" width="100" height="30" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.5"/>
+  <text x="340" y="718" text-anchor="middle" font-size="11" font-weight="500" fill="#fff" font-family="var(--font-sans)">Gate B</text>
+  <!-- Gate C - West -->
+  <rect class="zone" id="z-gate-c" x="8" y="365" width="30" height="50" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.5"/>
+  <text x="23" y="395" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)" transform="rotate(-90,23,390)">Gate C</text>
+  <!-- Gate D - East -->
+  <rect class="zone" id="z-gate-d" x="642" y="365" width="30" height="50" rx="6" fill="#D85A30" stroke="#fff" stroke-width="0.5"/>
+  <text x="657" y="395" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)" transform="rotate(90,657,390)">Gate D</text>
+
+  <!-- ─── AMENITIES ─── -->
+  <!-- Locker Rooms - SW -->
+  <rect class="zone" id="z-locker" x="96" y="610" width="68" height="36" rx="5" fill="#639922" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="130" y="632" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Locker Rms</text>
+  <!-- Press Box - East mid -->
+  <rect class="zone" id="z-press" x="548" y="372" width="52" height="36" rx="5" fill="#1D9E75" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="574" y="390" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Press Box</text>
+  <!-- Concessions North-West concourse -->
+  <rect class="zone" id="z-conc-nw" x="96" y="160" width="62" height="36" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="127" y="178" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Concessions</text>
+  <!-- Concessions North-East concourse -->
+  <rect class="zone" id="z-conc-ne" x="522" y="160" width="62" height="36" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="553" y="178" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Concessions</text>
+  <!-- Concessions South-West -->
+  <rect class="zone" id="z-conc-sw2" x="96" y="570" width="62" height="36" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="127" y="588" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Concessions</text>
+  <!-- Concessions South-East -->
+  <rect class="zone" id="z-conc-se2" x="522" y="570" width="62" height="36" rx="5" fill="#BA7517" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="553" y="588" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Concessions</text>
+  <!-- Restrooms West -->
+  <rect class="zone" id="z-rest-w" x="40" y="300" width="42" height="30" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="61" y="319" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Restrooms</text>
+  <!-- Restrooms East -->
+  <rect class="zone" id="z-rest-e" x="598" y="300" width="42" height="30" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="619" y="319" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Restrooms</text>
+  <!-- Restrooms West lower -->
+  <rect class="zone" id="z-rest-w2" x="40" y="450" width="42" height="30" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="61" y="469" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Restrooms</text>
+  <!-- Restrooms East lower -->
+  <rect class="zone" id="z-rest-e2" x="598" y="450" width="42" height="30" rx="5" fill="#185FA5" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="619" y="469" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Restrooms</text>
+  <!-- Team Store -->
+  <rect class="zone" id="z-store" x="548" y="610" width="52" height="36" rx="5" fill="#993C1D" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="574" y="632" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Team Store</text>
+  <!-- Medical -->
+  <rect class="zone" id="z-medical" x="302" y="712" width="76" height="30" rx="5" fill="#A32D2D" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+  <text x="340" y="731" text-anchor="middle" font-size="10" font-weight="500" fill="#fff" font-family="var(--font-sans)">Medical / First Aid</text>
+  <!-- Parking/Transit label North -->
+  <text x="340" y="20" text-anchor="middle" font-size="11" fill="#888780" font-family="var(--font-sans)">↑ North Parking / Transit</text>
+  <!-- Compass -->
+  <text x="636" y="745" text-anchor="middle" font-size="11" fill="#888780" font-family="var(--font-sans)">N↑</text>
+
+  <!-- Section labels on seating -->
+  <text x="340" y="135" text-anchor="middle" font-size="10" fill="#fff" opacity="0.7" font-family="var(--font-sans)">Sections 300–340 (Upper N)</text>
+  <text x="340" y="648" text-anchor="middle" font-size="10" fill="#fff" opacity="0.7" font-family="var(--font-sans)">Sections 341–380 (Upper S)</text>
+  <text x="340" y="190" text-anchor="middle" font-size="10" fill="#fff" opacity="0.85" font-family="var(--font-sans)">Sections 200–220 (Lower N)</text>
+  <text x="340" y="596" text-anchor="middle" font-size="10" fill="#fff" opacity="0.85" font-family="var(--font-sans)">Sections 221–240 (Lower S)</text>
+  <text x="340" y="390" text-anchor="middle" font-size="9" fill="#fff" opacity="0.65" font-family="var(--font-sans)">50 YD LINE</text>
+</svg>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#534AB7"></div>Upper deck</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#7F77DD"></div>Lower bowl</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#EF9F27"></div>Club / suites</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#AFA9EC"></div>Field-level seats</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#D85A30"></div>Gates</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#BA7517"></div>Concessions</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#185FA5"></div>Restrooms</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#639922"></div>Locker rooms</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#1D9E75"></div>Press box</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#2d7a3a"></div>Playing field</div>
+</div>
+</div>
+
+<script>
+const zoneData = {
+  "z-upper-n":      {name:"Upper Deck — North End Zone (Sections 300–320)",    desc:"Upper tier seating behind the north end zone. 3 rows of sections, 28 rows deep. General admission. Vomitories at rows 12 and 28."},
+  "z-upper-s":      {name:"Upper Deck — South End Zone (Sections 361–380)",    desc:"Upper tier seating behind the south end zone. Mirror layout of north. Elevator access at section 370."},
+  "z-upper-w":      {name:"Upper Deck — West Sideline (Sections 321–340)",     desc:"Upper tier west sideline. Premium views of full field. 32 rows deep. ADA accessible seating at row 1."},
+  "z-upper-e":      {name:"Upper Deck — East Sideline (Sections 341–360)",     desc:"Upper tier east sideline. Directly opposite press box. Excellent sightlines to both end zones."},
+  "z-upper-nw":     {name:"Upper Deck — NW Corner (Sections 318–322)",         desc:"Corner seating connecting west sideline and north end zone upper deck."},
+  "z-upper-ne":     {name:"Upper Deck — NE Corner (Sections 298–302)",         desc:"Corner seating connecting east sideline and north end zone upper deck."},
+  "z-upper-sw":     {name:"Upper Deck — SW Corner (Sections 338–342)",         desc:"Corner seating connecting west sideline and south end zone upper deck."},
+  "z-upper-se":     {name:"Upper Deck — SE Corner (Sections 358–362)",         desc:"Corner seating connecting east sideline and south end zone upper deck."},
+  "z-conc-n":       {name:"Main Concourse — North",                             desc:"300-level main concourse. Connects Gate A to north upper bowl. Houses concession stands, restrooms, and merchandise kiosks. Width: ~18 ft."},
+  "z-conc-s":       {name:"Main Concourse — South",                             desc:"300-level main concourse. Connects Gate B to south upper bowl. ADA ramp access. Width: ~18 ft."},
+  "z-conc-w":       {name:"Main Concourse — West",                              desc:"West corridor concourse wrapping upper deck. Elevator bank at midpoint. Emergency egress stairwells at each section."},
+  "z-conc-e":       {name:"Main Concourse — East",                              desc:"East corridor concourse. Press credentialing office adjacent. Security checkpoint near Gate D connection."},
+  "z-lower-n":      {name:"Lower Bowl — North End Zone (Sections 200–210)",     desc:"Lower tier north end zone. Excellent atmosphere sections. 22 rows deep. Student/supporter groups often here."},
+  "z-lower-s":      {name:"Lower Bowl — South End Zone (Sections 228–240)",     desc:"Lower tier south end zone. Family-friendly zone designation. 22 rows deep."},
+  "z-lower-w":      {name:"Lower Bowl — West Sideline (Sections 111–130)",      desc:"Lower tier west sideline. Premium lower-bowl sightlines. 20 rows deep. Club access adjacent."},
+  "z-lower-e":      {name:"Lower Bowl — East Sideline (Sections 131–150)",      desc:"Lower tier east sideline. Directly below press box. 20 rows deep."},
+  "z-lower-nw":     {name:"Lower Bowl — NW Corner (Sections 108–112)",          desc:"Corner sections connecting west sideline and north end zone lower bowl."},
+  "z-lower-ne":     {name:"Lower Bowl — NE Corner (Sections 150–154)",          desc:"Corner sections connecting east sideline and north end zone lower bowl."},
+  "z-lower-sw":     {name:"Lower Bowl — SW Corner (Sections 128–132)",          desc:"Corner sections connecting west sideline and south end zone lower bowl."},
+  "z-lower-se":     {name:"Lower Bowl — SE Corner (Sections 150–158)",          desc:"Corner sections connecting east sideline and south end zone lower bowl."},
+  "z-club-w":       {name:"Club Level — West Sideline (Sections C100–C115)",    desc:"Premium club seats with in-seat food & beverage service. Climate-controlled access to indoor club lounges. Seat backs with extra legroom. 12 rows."},
+  "z-club-e":       {name:"Club Level — East Sideline (Sections C116–C130)",    desc:"Premium club seats opposite west club. Private entrance via dedicated club escalators at Gate D."},
+  "z-club-n":       {name:"Club / Suite Level — North (Suites 1–20)",           desc:"Private luxury suites behind north end zone. Each suite: 12–20 guests, catering, private restroom, TV monitors. Suite concierge on level."},
+  "z-club-s":       {name:"Club / Suite Level — South (Suites 21–40)",          desc:"Private luxury suites behind south end zone. Field-facing glass suites and indoor configurations available."},
+  "z-field-seats-w":{name:"Field-Level Seats — West (Sections F1–F15)",         desc:"Front-row field level, west sideline. Closest proximity to players and sidelines. Limited capacity. All-inclusive premium ticketing."},
+  "z-field-seats-e":{name:"Field-Level Seats — East (Sections F16–F30)",        desc:"Field-level east sideline. Team bench areas adjacent. Camera pit access for credentialed media."},
+  "z-field-seats-n":{name:"Field-Level Seats — North End Zone (Sections F40–F55)",desc:"Field-level seating behind north end zone. Goal post view. Premium atmosphere on scoring plays."},
+  "z-field-seats-s":{name:"Field-Level Seats — South End Zone (Sections F56–F70)",desc:"Field-level seating behind south end zone. Tunnel view for player entry and exit."},
+  "z-field":        {name:"Playing Field",                                       desc:"Natural or synthetic turf. 360 ft × 160 ft (110 × 49 m). Two 10-yard end zones. Mid-field logo at 50-yard line. Goal posts at each end zone back line."},
+  "z-gate-a":       {name:"Gate A — Main North Entrance",                        desc:"Primary public entrance. ADA accessible. Ticket scanning, bag check, security screening. Opens 3 hrs before kickoff. Transit connection to north parking structure."},
+  "z-gate-b":       {name:"Gate B — South Entrance",                             desc:"South public entrance. Secondary main gate. ADA accessible. Family services desk inside. Will Call pickup location."},
+  "z-gate-c":       {name:"Gate C — West Entrance",                              desc:"West entrance serving west sideline club and lower bowl ticketholders. VIP and suite holder priority lane. Parking Lot C direct access."},
+  "z-gate-d":       {name:"Gate D — East Entrance",                              desc:"East entrance. Media and credentialed personnel entry point. Press box direct-access escalators inside. Loading dock adjacent."},
+  "z-locker":       {name:"Locker Rooms — SW Tunnel",                            desc:"Home and visiting team locker rooms. Restricted access. Player tunnel connects directly to south end zone field level. Interview rooms adjacent."},
+  "z-press":        {name:"Press Box — East Upper Level",                        desc:"Official press box spanning 40 yards of east sideline. Radio/TV broadcast booths, stats crew, coaching booths. Air-conditioned. Access via credentialed elevator."},
+  "z-conc-nw":      {name:"Concessions — NW Concourse",                         desc:"Full-service food & beverage. Hot dogs, burgers, nachos, local specialty items. Beer & alcohol service until Q3. 8 POS terminals. ADA counter height available."},
+  "z-conc-ne":      {name:"Concessions — NE Concourse",                         desc:"Full-service concessions. Specialty grab-and-go items, vegetarian options. Mobile order pickup station."},
+  "z-conc-sw2":     {name:"Concessions — SW Concourse",                         desc:"Full-service food & beverage. Full bar service. Premium cocktail stand. 10 POS terminals."},
+  "z-conc-se2":     {name:"Concessions — SE Concourse",                         desc:"Full-service concessions. Kids menu items. Non-alcoholic beverage station."},
+  "z-rest-w":       {name:"Restrooms — West (Upper Level)",                      desc:"Men's, women's, and family/ADA restrooms. 20 stalls each. Changing station in family room. Touchless fixtures throughout."},
+  "z-rest-e":       {name:"Restrooms — East (Upper Level)",                      desc:"Men's, women's, and family/ADA restrooms. ADA grab bars. Baby changing station. Located adjacent to east concourse."},
+  "z-rest-w2":      {name:"Restrooms — West (Lower Level)",                      desc:"Lower concourse restrooms. High-capacity design. Attendant-staffed during peak periods."},
+  "z-rest-e2":      {name:"Restrooms — East (Lower Level)",                      desc:"Lower east concourse restrooms. ADA accessible. Near club-level entry."},
+  "z-store":        {name:"Team Store — SE Concourse",                           desc:"Official team merchandise. 2,800 sq ft. Jerseys, apparel, souvenirs, helmets. Open before, during, and 30 min after game. POS: 12 terminals."},
+  "z-medical":      {name:"Medical / First Aid — South Concourse",               desc:"Staffed by paramedics and EMTs on game days. Equipped with AED, oxygen, trauma supplies. Second medical station at Gate A inside. Defibrillators mounted every 200 ft throughout stadium."}
+};
+
+let active = null;
+document.querySelectorAll('.zone').forEach(el => {
+  el.addEventListener('click', function(){
+    const id = this.id;
+    const data = zoneData[id];
+    if(!data) return;
+    if(active) active.classList.remove('active');
+    this.classList.add('active');
+    active = this;
+    const panel = document.getElementById('info-panel');
+    panel.querySelector('.zone-name').textContent = data.name;
+    panel.querySelector('.zone-desc').textContent = data.desc;
+  });
+});
+</script>
+</body>
+</html>
