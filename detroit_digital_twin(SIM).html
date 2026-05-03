@@ -367,6 +367,9 @@ let flashRings = []; // [{x,y,r,alpha}]
 function addFlashRing(gx, gy) {
   flashRings.push({x:gx, y:gy, r:0, alpha:1});
 }
+// Extended draw to include flash rings (injected into drawMarkers)
+const _origDrawMarkers = drawMarkers;
+
 // ============================================================
 // COORDINATE TRANSFORMS
 // ============================================================
@@ -557,11 +560,14 @@ function drawMarkers() {
       ctx.fillText('🚗', sx, sy+1);
     }
   });
+}
 
-  // Flash rings — expanding pulse circles on alert events
+// Wrap drawMarkers to also paint flash rings
+drawMarkers = function() {
+  _origDrawMarkers();
   flashRings = flashRings.filter(fr => fr.alpha > 0.01);
   flashRings.forEach(fr => {
-    fr.r    += 2.5 * zoom;
+    fr.r   += 2.5 * zoom;
     fr.alpha *= 0.88;
     const [sx, sy] = toScreen(fr.x, fr.y);
     ctx.beginPath();
@@ -570,7 +576,7 @@ function drawMarkers() {
     ctx.lineWidth = 2;
     ctx.stroke();
   });
-}
+};
 
 function addMarker(type, x, y, label, r) {
   markers.push({type, x, y, label: label||'', r: r||10});
