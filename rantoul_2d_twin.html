@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rantoul RFSC — Sentinel Command 2D</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#060b10; font-family:'Rajdhani','Segoe UI',monospace; overflow:hidden; color:#aab; height:100vh; display:flex; flex-direction:column; }
+
+/* ── TOP BAR ── */
+#topbar {
+  height:52px; flex-shrink:0;
+  background:linear-gradient(180deg,rgba(3,7,14,0.99),rgba(3,7,14,0.92));
+  border-bottom:1px solid rgba(0,210,120,0.22);
+  display:flex; align-items:center; padding:0 16px; gap:12px; z-index:30;
+}
+.logo { font-size:16px; font-weight:700; letter-spacing:3px; color:#00d878; text-transform:uppercase; display:flex; align-items:center; gap:9px; }
+.logo-icon { width:28px; height:28px; border:2px solid #00d878; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+.logo-sub { color:#2a4a30; font-weight:400; font-size:12px; }
+.pills { display:flex; gap:7px; margin-left:auto; flex-wrap:nowrap; }
+.pill { padding:3px 9px; border-radius:2px; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; border:1px solid; font-family:'Share Tech Mono',monospace; white-space:nowrap; }
+.p-green { color:#00ff88; border-color:rgba(0,255,136,0.35); background:rgba(0,255,136,0.07); }
+.p-red   { color:#ff3355; border-color:rgba(255,51,85,0.35);  background:rgba(255,51,85,0.07); }
+.p-amber { color:#ffaa00; border-color:rgba(255,170,0,0.35);  background:rgba(255,170,0,0.07); }
+.p-blue  { color:#00b4ff; border-color:rgba(0,180,255,0.35);  background:rgba(0,180,255,0.07); }
+.p-teal  { color:#00d878; border-color:rgba(0,216,120,0.35);  background:rgba(0,216,120,0.07); }
+#clock { font-family:'Share Tech Mono',monospace; font-size:12px; color:#00d878; letter-spacing:2px; min-width:70px; text-align:right; }
+
+/* ── MAIN BODY ── */
+#main { flex:1; display:flex; overflow:hidden; }
+
+/* ── LEFT PANEL ── */
+#left-panel {
+  width:258px; flex-shrink:0;
+  background:rgba(3,7,14,0.96); border-right:1px solid rgba(0,210,120,0.13);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+/* ── RIGHT PANEL ── */
+#right-panel {
+  width:242px; flex-shrink:0;
+  background:rgba(3,7,14,0.96); border-left:1px solid rgba(0,210,120,0.13);
+  display:flex; flex-direction:column; overflow-y:auto;
+}
+#right-panel::-webkit-scrollbar { width:3px; }
+#right-panel::-webkit-scrollbar-thumb { background:rgba(0,216,120,0.2); }
+
+/* ── CENTER MAP ── */
+#map-wrap {
+  flex:1; position:relative; overflow:hidden; background:#07100d;
+  cursor:grab;
+}
+#map-wrap:active { cursor:grabbing; }
+#map-svg { position:absolute; top:0; left:0; transform-origin:0 0; }
+
+/* SCANLINES overlay */
+#map-wrap::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.018) 3px,rgba(0,0,0,0.018) 6px);
+  z-index:5;
+}
+
+/* ── PANEL SHARED ── */
+.panel-hdr {
+  padding:9px 13px; border-bottom:1px solid rgba(0,210,120,0.12);
+  font-size:9px; letter-spacing:2px; color:#00d878; text-transform:uppercase; font-weight:700;
+  display:flex; align-items:center; gap:7px; flex-shrink:0;
+}
+.panel-hdr::before { content:''; width:3px; height:12px; background:#00d878; border-radius:1px; }
+
+#event-feed { flex:1; overflow-y:auto; padding:7px; }
+#event-feed::-webkit-scrollbar { width:3px; }
+#event-feed::-webkit-scrollbar-thumb { background:rgba(0,216,120,0.18); border-radius:2px; }
+
+.ev { padding:8px 10px; margin-bottom:4px; border-radius:2px; border-left:3px solid; background:rgba(255,255,255,0.022); animation:slideIn 0.3s ease; }
+@keyframes slideIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+.ev.crit { border-color:#ff3355; } .ev.warn { border-color:#ffaa00; } .ev.info { border-color:#00b4ff; } .ev.safe { border-color:#00ff88; }
+.ev-title { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.ev.crit .ev-title{color:#ff3355} .ev.warn .ev-title{color:#ffaa00} .ev.info .ev-title{color:#00b4ff} .ev.safe .ev-title{color:#00ff88}
+.ev-loc  { font-size:9px; color:#667788; margin-top:1px; }
+.ev-meta { font-size:8px; color:#384858; font-family:'Share Tech Mono',monospace; margin-top:2px; }
+
+.csec { padding:10px 13px; border-bottom:1px solid rgba(0,210,120,0.08); flex-shrink:0; }
+.csec h3 { font-size:9px; letter-spacing:2px; color:#00d878; text-transform:uppercase; margin-bottom:8px; font-weight:700; }
+.btn { display:block; width:100%; padding:6px 10px; margin-bottom:4px; border-radius:2px; border:1px solid; cursor:pointer; font-family:'Rajdhani',monospace; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; transition:all 0.15s; text-align:left; }
+.b-red  { color:#ff3355; border-color:rgba(255,51,85,0.35);  background:rgba(255,51,85,0.05); }
+.b-red:hover  { background:rgba(255,51,85,0.18); box-shadow:0 0 8px rgba(255,51,85,0.2); }
+.b-green{ color:#00ff88; border-color:rgba(0,255,136,0.35); background:rgba(0,255,136,0.05); }
+.b-green:hover{ background:rgba(0,255,136,0.18); }
+.b-blue { color:#00b4ff; border-color:rgba(0,180,255,0.35); background:rgba(0,180,255,0.05); }
+.b-blue:hover { background:rgba(0,180,255,0.18); }
+.b-amber{ color:#ffaa00; border-color:rgba(255,170,0,0.35);  background:rgba(255,170,0,0.05); }
+.b-amber:hover{ background:rgba(255,170,0,0.18); }
+.b-teal { color:#00d878; border-color:rgba(0,216,120,0.35); background:rgba(0,216,120,0.05); }
+.b-teal:hover { background:rgba(0,216,120,0.18); }
+
+.sim-sel { width:100%; padding:6px; background:rgba(0,216,120,0.04); border:1px solid rgba(0,216,120,0.22); border-radius:2px; color:#aab; font-family:'Rajdhani',monospace; font-size:10px; margin-bottom:6px; cursor:pointer; }
+.sim-sel option { background:#060b10; }
+#sim-phase { text-align:center; padding:6px; margin:4px 0; border-radius:2px; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+.phase-clear    { background:rgba(0,255,136,0.06); color:#00ff88; border:1px solid rgba(0,255,136,0.15); }
+.phase-active   { background:rgba(255,51,85,0.08);  color:#ff3355; border:1px solid rgba(255,51,85,0.22); }
+.phase-response { background:rgba(0,180,255,0.06); color:#00b4ff; border:1px solid rgba(0,180,255,0.18); }
+
+.dev-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.025); }
+.dev-name { font-size:9px; color:#556677; }
+.dev-stat { font-size:8px; font-weight:700; letter-spacing:1px; }
+.s-ok{color:#00ff88} .s-warn{color:#ffaa00} .s-alert{color:#ff3355}
+
+/* ── BOTTOM BAR ── */
+#statbar {
+  height:40px; flex-shrink:0;
+  background:rgba(3,7,14,0.96); border-top:1px solid rgba(0,210,120,0.12);
+  display:flex; align-items:center; padding:0 16px; gap:24px;
+}
+.stat-it { display:flex; align-items:center; gap:6px; }
+.stat-dot { width:6px; height:6px; border-radius:50%; }
+.stat-lbl { font-size:8px; color:#334455; letter-spacing:1px; text-transform:uppercase; }
+.stat-val { font-size:12px; font-weight:700; font-family:'Share Tech Mono',monospace; }
+
+/* ── ALERT FLASH ── */
+#alert-flash {
+  position:absolute; top:10px; left:50%; transform:translateX(-50%);
+  background:rgba(255,51,85,0.13); border:1px solid rgba(255,51,85,0.6);
+  color:#ff3355; padding:8px 26px; font-size:11px; font-weight:700;
+  letter-spacing:3px; border-radius:2px; display:none;
+  animation:flashPulse 0.5s ease infinite alternate; z-index:20; backdrop-filter:blur(4px);
+  pointer-events:none; white-space:nowrap;
+}
+@keyframes flashPulse { from{opacity:0.7;box-shadow:0 0 8px rgba(255,51,85,0.2)} to{opacity:1;box-shadow:0 0 22px rgba(255,51,85,0.5)} }
+
+/* ── MAP ZOOM HINT ── */
+#map-hint { position:absolute; bottom:6px; left:50%; transform:translateX(-50%); font-size:8px; color:rgba(0,216,120,0.3); letter-spacing:1px; pointer-events:none; font-family:'Share Tech Mono',monospace; white-space:nowrap; z-index:10; }
+
+/* ── LOADING ── */
+#loading { position:fixed; inset:0; background:#04070d; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1000; }
+.ld-title { font-size:24px; font-weight:700; color:#00d878; letter-spacing:6px; margin-bottom:5px; }
+.ld-sub   { font-size:9px; color:#1e3020; letter-spacing:3px; margin-bottom:32px; }
+.ld-wrap  { width:260px; height:2px; background:rgba(0,216,120,0.1); border-radius:1px; }
+.ld-bar   { height:2px; background:#00d878; border-radius:1px; width:0%; transition:width 0.3s; box-shadow:0 0 7px #00d878; }
+.ld-status { font-family:'Share Tech Mono',monospace; font-size:9px; color:#233a23; margin-top:9px; letter-spacing:1px; }
+
+/* ── LEGEND ── */
+#legend {
+  position:absolute; bottom:30px; right:8px;
+  background:rgba(3,7,14,0.88); border:1px solid rgba(0,210,120,0.15);
+  padding:8px 10px; border-radius:3px; z-index:10; pointer-events:none;
+  backdrop-filter:blur(6px);
+}
+.leg-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; font-size:8px; color:#667788; letter-spacing:0.5px; }
+.leg-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.leg-sq  { width:10px; height:10px; flex-shrink:0; }
+
+/* Crowd density bars */
+.zone-bar { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+.zone-lbl { font-size:9px; color:#556677; width:80px; flex-shrink:0; }
+.bar-track { flex:1; height:6px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+.bar-fill  { height:100%; border-radius:2px; transition:width 0.9s ease; }
+.zone-pct  { font-size:9px; font-family:'Share Tech Mono',monospace; width:30px; text-align:right; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-title">SENTINEL COMMAND</div>
+  <div class="ld-sub">RANTOUL FAMILY SPORTS COMPLEX — 2D DIGITAL TWIN</div>
+  <div class="ld-wrap"><div class="ld-bar" id="ld-bar"></div></div>
+  <div class="ld-status" id="ld-status">INITIALIZING MAP ENGINE...</div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">⬡</div>
+    SENTINEL <span class="logo-sub">/ RFSC 2D TWIN</span>
+  </div>
+  <div class="pills">
+    <span class="pill p-teal" id="pill-event">YOUTH TOURNAMENT</span>
+    <span class="pill p-green" id="pill-cams">32 CAMS ONLINE</span>
+    <span class="pill p-green" id="pill-gates">14 GATES SECURED</span>
+    <span class="pill p-amber" id="pill-threats">0 THREATS</span>
+    <span class="pill p-blue"  id="pill-crowd">CROWD: 2,840</span>
+  </div>
+  <div id="clock">00:00:00</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT: EVENT FEED -->
+  <div id="left-panel">
+    <div class="panel-hdr">Live Event Feed</div>
+    <div id="event-feed"></div>
+  </div>
+
+  <!-- CENTER: 2D MAP -->
+  <div id="map-wrap">
+    <div id="alert-flash">⚠ ACTIVE THREAT — ALL UNITS RESPOND</div>
+    <div id="map-hint">SCROLL TO ZOOM &nbsp;·&nbsp; DRAG TO PAN</div>
+
+    <!-- THE SVG MAP -->
+    <svg id="map-svg" width="1100" height="780" viewBox="0 0 1100 780" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="fieldGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#00ff88" stop-opacity="0.08"/>
+          <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="softglow">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- ═══ BACKGROUND / GROUND ═══ -->
+      <rect width="1100" height="780" fill="#0a160e"/>
+
+      <!-- ═══ ROADS ═══ -->
+      <!-- Stone Bridge Dr (top) -->
+      <rect x="0" y="0" width="1100" height="32" fill="#141820"/>
+      <text x="400" y="21" fill="#334455" font-size="11" font-family="Share Tech Mono,monospace" letter-spacing="2">STONE BRIDGE DR</text>
+      <!-- Murray Rd (right) -->
+      <rect x="1068" y="0" width="32" height="780" fill="#141820"/>
+      <text x="1078" y="400" fill="#334455" font-size="11" font-family="Share Tech Mono,monospace" letter-spacing="2" writing-mode="tb">MURRAY RD</text>
+      <!-- I-57 badge -->
+      <rect x="1010" y="2" width="54" height="24" rx="3" fill="#cc2200"/>
+      <text x="1037" y="18" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif">I-57</text>
+
+      <!-- ═══ PERIMETER FENCE ═══ -->
+      <rect x="18" y="34" width="1048" height="738" rx="4" fill="none" stroke="#00d878" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.35"/>
+
+      <!-- ═══ GROUND FILLS ═══ -->
+      <!-- Central path N-S -->
+      <rect x="490" y="34" width="30" height="744" fill="#0f1a14" opacity="0.8"/>
+      <!-- Main concourse E-W -->
+      <rect x="18" y="310" width="1048" height="24" fill="#0f1a14" opacity="0.8"/>
+
+      <!-- ═══ PARKING LOTS ═══ -->
+      <!-- West/Baseball parking -->
+      <rect x="24" y="490" width="180" height="80" rx="2" fill="#121a14" stroke="#1e2e20" stroke-width="1"/>
+      <text x="114" y="536" fill="#2a3e2a" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">PARKING</text>
+      <!-- parking lines -->
+      <line x1="50"  y1="492" x2="50"  y2="568" stroke="#1e2e1e" stroke-width="0.8"/>
+      <line x1="75"  y1="492" x2="75"  y2="568" stroke="#1e2e1e" stroke-width="0.8"/>
+      <line x1="100" y1="492" x2="100" y2="568" stroke="#1e2e1e" stroke-width="0.8"/>
+      <line x1="125" y1="492" x2="125" y2="568" stroke="#1e2e1e" stroke-width="0.8"/>
+      <line x1="150" y1="492" x2="150" y2="568" stroke="#1e2e1e" stroke-width="0.8"/>
+      <line x1="175" y1="492" x2="175" y2="568" stroke="#1e2e1e" stroke-width="0.8"/>
+
+      <!-- Overflow parking -->
+      <rect x="370" y="600" width="110" height="130" rx="2" fill="#131e13" stroke="#1a2a1a" stroke-width="1"/>
+      <text x="425" y="668" fill="#2a3a2a" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">OVERFLOW</text>
+      <line x1="390" y1="602" x2="390" y2="728" stroke="#1a2a1a" stroke-width="0.8"/>
+      <line x1="415" y1="602" x2="415" y2="728" stroke="#1a2a1a" stroke-width="0.8"/>
+      <line x1="440" y1="602" x2="440" y2="728" stroke="#1a2a1a" stroke-width="0.8"/>
+      <line x1="465" y1="602" x2="465" y2="728" stroke="#1a2a1a" stroke-width="0.8"/>
+
+      <!-- Central parking (between fields) -->
+      <rect x="500" y="234" width="170" height="70" rx="2" fill="#121a14" stroke="#1e2e20" stroke-width="1"/>
+      <text x="585" y="274" fill="#2a3e2a" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">PARKING</text>
+
+      <!-- ═══ RETENTION PONDS ═══ -->
+      <ellipse cx="840" cy="210" rx="44" ry="28" fill="#0a2030" stroke="#1a4060" stroke-width="1.5"/>
+      <text x="840" y="214" fill="#1a4060" font-size="8" text-anchor="middle" font-family="Share Tech Mono,monospace">POND</text>
+      <ellipse cx="430" cy="730" rx="55" ry="32" fill="#0a1e2e" stroke="#1a3a55" stroke-width="1.5"/>
+      <text x="430" y="734" fill="#1a3a55" font-size="8" text-anchor="middle" font-family="Share Tech Mono,monospace">POND</text>
+
+      <!-- ═══ MAINTENANCE SHED ═══ -->
+      <rect x="488" y="720" width="44" height="34" rx="2" fill="#1a1a20" stroke="#2a2a30" stroke-width="1.2"/>
+      <text x="510" y="741" fill="#334455" font-size="8" text-anchor="middle" font-family="Rajdhani,monospace">MAINT</text>
+
+      <!-- ═══ VETS MEMORIAL ═══ -->
+      <circle cx="255" cy="535" r="14" fill="#101820" stroke="#2a3a50" stroke-width="1.2"/>
+      <line x1="255" y1="520" x2="255" y2="549" stroke="#aaaacc" stroke-width="2"/>
+      <text x="255" y="558" fill="#445566" font-size="7" text-anchor="middle" font-family="Rajdhani,monospace">VETS MEM</text>
+
+      <!-- ═══ BASEBALL FIELDS 1-4 (NW cluster) ═══ -->
+      <!-- Field 1 - top right of NW cluster -->
+      <g id="field-1" class="field" data-name="FIELD 1" data-type="baseball">
+        <circle cx="310" cy="145" r="100" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M310,145 L410,145 A100,100 0 0,0 310,45 Z" fill="#3a2010"/>
+        <circle cx="310" cy="145" r="55" fill="#2e1a0a"/>
+        <rect x="302" y="137" width="16" height="16" fill="#d4a000" opacity="0.9"/>
+        <text x="310" y="120" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">1</text>
+      </g>
+
+      <!-- Field 4 - top left of NW cluster -->
+      <g id="field-4" class="field" data-name="FIELD 4" data-type="baseball">
+        <circle cx="130" cy="145" r="100" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M130,145 L230,145 A100,100 0 0,0 130,45 Z" fill="#3a2010"/>
+        <circle cx="130" cy="145" r="55" fill="#2e1a0a"/>
+        <rect x="122" y="137" width="16" height="16" fill="#d4a000" opacity="0.9"/>
+        <text x="130" y="120" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">4</text>
+      </g>
+
+      <!-- Field 2 - bottom right of NW cluster -->
+      <g id="field-2" class="field" data-name="FIELD 2" data-type="baseball">
+        <circle cx="310" cy="290" r="100" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M310,290 L410,290 A100,100 0 0,0 310,190 Z" fill="#3a2010"/>
+        <circle cx="310" cy="290" r="55" fill="#2e1a0a"/>
+        <rect x="302" y="282" width="16" height="16" fill="#d4a000" opacity="0.9"/>
+        <text x="310" y="265" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">2</text>
+      </g>
+
+      <!-- Field 3 - bottom left of NW cluster -->
+      <g id="field-3" class="field" data-name="FIELD 3" data-type="baseball">
+        <circle cx="130" cy="290" r="100" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M130,290 L230,290 A100,100 0 0,0 130,190 Z" fill="#3a2010"/>
+        <circle cx="130" cy="290" r="55" fill="#2e1a0a"/>
+        <rect x="122" y="282" width="16" height="16" fill="#d4a000" opacity="0.9"/>
+        <text x="130" y="265" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">3</text>
+      </g>
+
+      <!-- ═══ BASEBALL FIELDS 5-8 (SW cluster) ═══ -->
+      <!-- Field 5 -->
+      <g id="field-5" class="field" data-name="FIELD 5" data-type="baseball">
+        <circle cx="310" cy="590" r="100" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M310,590 L410,590 A100,100 0 0,0 310,490 Z" fill="#3a2010"/>
+        <circle cx="310" cy="590" r="55" fill="#2e1a0a"/>
+        <rect x="302" y="582" width="16" height="16" fill="#d4a000" opacity="0.9"/>
+        <text x="310" y="565" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">5</text>
+      </g>
+
+      <!-- Field 8 -->
+      <g id="field-8" class="field" data-name="FIELD 8" data-type="baseball">
+        <circle cx="130" cy="590" r="100" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M130,590 L230,590 A100,100 0 0,0 130,490 Z" fill="#3a2010"/>
+        <circle cx="130" cy="590" r="55" fill="#2e1a0a"/>
+        <rect x="122" y="582" width="16" height="16" fill="#d4a000" opacity="0.9"/>
+        <text x="130" y="565" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">8</text>
+      </g>
+
+      <!-- Field 6 -->
+      <g id="field-6" class="field" data-name="FIELD 6" data-type="baseball">
+        <circle cx="310" cy="720" r="95" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M310,720 L405,720 A95,95 0 0,0 310,625 Z" fill="#3a2010"/>
+        <circle cx="310" cy="720" r="52" fill="#2e1a0a"/>
+        <rect x="303" y="713" width="14" height="14" fill="#d4a000" opacity="0.9"/>
+        <text x="310" y="697" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">6</text>
+      </g>
+
+      <!-- Field 7 -->
+      <g id="field-7" class="field" data-name="FIELD 7" data-type="baseball">
+        <circle cx="130" cy="720" r="95" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8" opacity="0.9"/>
+        <path d="M130,720 L225,720 A95,95 0 0,0 130,625 Z" fill="#3a2010"/>
+        <circle cx="130" cy="720" r="52" fill="#2e1a0a"/>
+        <rect x="123" y="713" width="14" height="14" fill="#d4a000" opacity="0.9"/>
+        <text x="130" y="697" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.7">7</text>
+      </g>
+
+      <!-- ═══ SOCCER FIELDS 9-16 (East) ═══ -->
+      <!-- Row 1: 9,10,11,12 -->
+      <g id="field-9" class="field" data-name="FIELD 9" data-type="soccer">
+        <rect x="522" y="44" width="122" height="80" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="583" y1="44" x2="583" y2="124" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="583" cy="84" r="10" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="522" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="632" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="583" y="90" fill="#00ff88" font-size="18" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">9</text>
+      </g>
+
+      <g id="field-10" class="field" data-name="FIELD 10" data-type="soccer">
+        <rect x="656" y="44" width="122" height="80" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="717" y1="44" x2="717" y2="124" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="717" cy="84" r="10" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="656" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="766" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="717" y="90" fill="#00ff88" font-size="18" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">10</text>
+      </g>
+
+      <g id="field-11" class="field" data-name="FIELD 11" data-type="soccer">
+        <rect x="790" y="44" width="122" height="80" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="851" y1="44" x2="851" y2="124" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="851" cy="84" r="10" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="790" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="900" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="851" y="90" fill="#00ff88" font-size="18" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">11</text>
+      </g>
+
+      <g id="field-12" class="field" data-name="FIELD 12" data-type="soccer">
+        <rect x="924" y="44" width="122" height="80" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="985" y1="44" x2="985" y2="124" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="985" cy="84" r="10" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="924" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="1034" y="64" width="12" height="20" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="985" y="90" fill="#00ff88" font-size="18" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">12</text>
+      </g>
+
+      <!-- Row 2: 13,14 -->
+      <g id="field-13" class="field" data-name="FIELD 13" data-type="soccer">
+        <rect x="670" y="338" width="180" height="120" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="760" y1="338" x2="760" y2="458" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="760" cy="398" r="14" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="670" y="368" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="836" y="368" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="760" y="405" fill="#00ff88" font-size="20" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">13</text>
+      </g>
+
+      <g id="field-14" class="field" data-name="FIELD 14" data-type="soccer">
+        <rect x="862" y="338" width="180" height="120" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="952" y1="338" x2="952" y2="458" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="952" cy="398" r="14" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="862" y="368" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="1028" y="368" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="952" y="405" fill="#00ff88" font-size="20" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">14</text>
+      </g>
+
+      <!-- Row 3: 15,16 -->
+      <g id="field-15" class="field" data-name="FIELD 15" data-type="soccer">
+        <rect x="670" y="470" width="180" height="120" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="760" y1="470" x2="760" y2="590" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="760" cy="530" r="14" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="670" y="500" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="836" y="500" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="760" y="537" fill="#00ff88" font-size="20" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">15</text>
+      </g>
+
+      <g id="field-16" class="field" data-name="FIELD 16" data-type="soccer">
+        <rect x="862" y="470" width="180" height="120" rx="2" fill="#1a5c1a" stroke="#00d878" stroke-width="0.8"/>
+        <line x1="952" y1="470" x2="952" y2="590" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <circle cx="952" cy="530" r="14" fill="none" stroke="#40c040" stroke-width="0.7" opacity="0.6"/>
+        <rect x="862" y="500" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <rect x="1028" y="500" width="14" height="28" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.5"/>
+        <text x="952" y="537" fill="#00ff88" font-size="20" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif" opacity="0.6">16</text>
+      </g>
+
+      <!-- ═══ HOSPITALITY HUB ═══ -->
+      <rect x="500" y="334" width="155" height="150" rx="3" fill="#0e1e18" stroke="#1e3e2e" stroke-width="1.5"/>
+      <!-- Main building -->
+      <rect x="516" y="354" width="100" height="80" rx="2" fill="#122020" stroke="#1e3e30" stroke-width="1"/>
+      <!-- Main Office (M) -->
+      <rect x="528" y="366" width="30" height="30" rx="1" fill="#1a2060" stroke="#2a3080" stroke-width="1"/>
+      <text x="543" y="386" fill="#00b4ff" font-size="13" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif">M</text>
+      <!-- Restrooms/Concessions icon -->
+      <rect x="566" y="366" width="36" height="18" rx="1" fill="#1a3030" stroke="#244040" stroke-width="0.8"/>
+      <text x="584" y="379" fill="#446666" font-size="8" text-anchor="middle" font-family="Rajdhani,monospace">R/C</text>
+      <!-- Play area -->
+      <rect x="516" y="444" width="60" height="34" rx="2" fill="#1a2a18" stroke="#2a3a22" stroke-width="1"/>
+      <circle cx="536" cy="461" r="7" fill="#cc4400" opacity="0.7"/>
+      <circle cx="556" cy="461" r="5" fill="#004488" opacity="0.7"/>
+      <text x="546" y="463" fill="#334433" font-size="7" text-anchor="middle" font-family="Rajdhani,monospace">PLAY</text>
+      <!-- Challenger fields marker -->
+      <circle cx="595" cy="455" r="12" fill="#1a2a18" stroke="#006622" stroke-width="1"/>
+      <text x="595" y="459" fill="#006622" font-size="7" text-anchor="middle" font-family="Rajdhani,monospace">CHG</text>
+      <text x="577" y="490" fill="#336633" font-size="9" text-anchor="middle" font-family="Rajdhani,sans-serif" letter-spacing="1">HUB</text>
+
+      <!-- ═══ CAMERA MARKERS (group, toggled by JS) ═══ -->
+      <g id="layer-cameras" opacity="1">
+        <!-- Baseball NW -->
+        <circle cx="26"  cy="145" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="26"  cy="290" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="130" cy="36"  r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="310" cy="36"  r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="420" cy="145" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="420" cy="290" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <!-- Baseball SW -->
+        <circle cx="26"  cy="590" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="26"  cy="720" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="130" cy="770" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="310" cy="770" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="420" cy="590" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="420" cy="720" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <!-- Hub / Center -->
+        <circle cx="500" cy="420" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="660" cy="320" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <!-- Soccer N row -->
+        <circle cx="583" cy="36"  r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="717" cy="36"  r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="851" cy="36"  r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="985" cy="36"  r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="1060" cy="84" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <!-- Soccer E edge -->
+        <circle cx="1060" cy="398" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="1060" cy="530" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <!-- Soccer center rows -->
+        <circle cx="760" cy="328" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="952" cy="328" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="760" cy="600" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="952" cy="600" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <!-- Parking / perimeter -->
+        <circle cx="114" cy="486" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="425" cy="597" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="585" cy="230" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <circle cx="585" cy="600" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+        <!-- Murray Rd gate -->
+        <circle cx="1060" cy="240" r="5" fill="#00d878" opacity="0.9" filter="url(#glow)"/>
+      </g>
+
+      <!-- ═══ ACOUSTIC GUNSHOT SENSORS ═══ -->
+      <g id="layer-sensors" opacity="1">
+        <circle cx="220" cy="200" r="7" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.7" filter="url(#softglow)"/>
+        <circle cx="220" cy="200" r="3" fill="#ffaa00" opacity="0.8"/>
+        <circle cx="220" cy="480" r="7" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.7" filter="url(#softglow)"/>
+        <circle cx="220" cy="480" r="3" fill="#ffaa00" opacity="0.8"/>
+        <circle cx="580" cy="200" r="7" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.7" filter="url(#softglow)"/>
+        <circle cx="580" cy="200" r="3" fill="#ffaa00" opacity="0.8"/>
+        <circle cx="580" cy="430" r="7" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.7" filter="url(#softglow)"/>
+        <circle cx="580" cy="430" r="3" fill="#ffaa00" opacity="0.8"/>
+        <circle cx="717" cy="160" r="7" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.7" filter="url(#softglow)"/>
+        <circle cx="717" cy="160" r="3" fill="#ffaa00" opacity="0.8"/>
+        <circle cx="900" cy="240" r="7" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.7" filter="url(#softglow)"/>
+        <circle cx="900" cy="240" r="3" fill="#ffaa00" opacity="0.8"/>
+        <circle cx="900" cy="510" r="7" fill="none" stroke="#ffaa00" stroke-width="1.5" opacity="0.7" filter="url(#softglow)"/>
+        <circle cx="900" cy="510" r="3" fill="#ffaa00" opacity="0.8"/>
+      </g>
+
+      <!-- ═══ DYNAMIC LAYERS (threats/response added by JS) ═══ -->
+      <g id="layer-threats"></g>
+      <g id="layer-response"></g>
+
+      <!-- ═══ FIELD LABELS OVERLAY ═══ -->
+      <text x="130" y="160" fill="#004422" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">BASEBALL</text>
+      <text x="310" y="160" fill="#004422" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">BASEBALL</text>
+      <text x="130" y="305" fill="#004422" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">BASEBALL</text>
+      <text x="310" y="305" fill="#004422" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">BASEBALL</text>
+      <text x="130" y="605" fill="#004422" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">BASEBALL</text>
+      <text x="310" y="605" fill="#004422" font-size="9" text-anchor="middle" font-family="Share Tech Mono,monospace">BASEBALL</text>
+
+      <!-- Compass -->
+      <g transform="translate(555,65)">
+        <circle r="18" fill="rgba(3,7,14,0.7)" stroke="#00d878" stroke-width="1" opacity="0.7"/>
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#334455" stroke-width="1.5"/>
+        <line x1="-12" y1="0" x2="12" y2="0" stroke="#334455" stroke-width="1.5"/>
+        <text x="0" y="-5" fill="#00d878" font-size="8" font-weight="bold" text-anchor="middle" font-family="Rajdhani,sans-serif">N</text>
+        <text x="0" y="16" fill="#334455" font-size="7" text-anchor="middle" font-family="Rajdhani,sans-serif">S</text>
+        <text x="13" y="3" fill="#334455" font-size="7" text-anchor="middle" font-family="Rajdhani,sans-serif">E</text>
+        <text x="-13" y="3" fill="#334455" font-size="7" text-anchor="middle" font-family="Rajdhani,sans-serif">W</text>
+      </g>
+
+      <!-- Corner brackets -->
+      <line x1="22" y1="38" x2="42" y2="38" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+      <line x1="22" y1="38" x2="22" y2="58" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+      <line x1="1060" y1="38" x2="1040" y2="38" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+      <line x1="1060" y1="38" x2="1060" y2="58" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+      <line x1="22" y1="760" x2="42" y2="760" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+      <line x1="22" y1="760" x2="22" y2="740" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+      <line x1="1060" y1="760" x2="1040" y2="760" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+      <line x1="1060" y1="760" x2="1060" y2="740" stroke="#00d878" stroke-width="1.5" opacity="0.4"/>
+    </svg>
+
+    <!-- LEGEND -->
+    <div id="legend">
+      <div class="leg-row"><div class="leg-dot" style="background:#00d878"></div>Camera</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ffaa00;border-radius:0"></div>Acoustic Sensor</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#ff3355"></div>Threat</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#1a44cc"></div>LEO Unit</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#006699"></div>Security</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#cc0022"></div>Medical</div>
+      <div class="leg-row"><div class="leg-sq" style="background:#d4a000"></div>Scoring Tower</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: CONTROLS -->
+  <div id="right-panel">
+    <div class="panel-hdr">Command Controls</div>
+
+    <div class="csec">
+      <h3>Simulation</h3>
+      <select class="sim-sel" id="sim-sel">
+        <option value="clear">All Clear — Status Monitor</option>
+        <option value="weapon">Weapon Detection — Gate</option>
+        <option value="crowd_surge">Crowd Surge — Soccer Sideline</option>
+        <option value="active_threat">Active Shooter — Complex</option>
+        <option value="medical">Mass Casualty — Multi-Field</option>
+        <option value="evacuation">Full Evacuation Protocol</option>
+      </select>
+      <div id="sim-phase" class="phase-clear">ALL CLEAR</div>
+      <button class="btn b-teal"  onclick="startSim()">▶ RUN SIMULATION</button>
+      <button class="btn b-amber" onclick="resetSim()">↺ RESET ALL</button>
+    </div>
+
+    <div class="csec">
+      <h3>Emergency Actions</h3>
+      <button class="btn b-red"   onclick="triggerLockdown('full')">🔒 FULL COMPLEX LOCKDOWN</button>
+      <button class="btn b-red"   onclick="triggerLockdown('zone')">🔒 ZONE LOCKDOWN</button>
+      <button class="btn b-amber" onclick="evacuate()">⚡ INITIATE EVACUATION</button>
+      <button class="btn b-blue"  onclick="dispatchResponse()">🚔 DISPATCH SECURITY / LEO</button>
+      <button class="btn b-green" onclick="allClear()">✓ ALL CLEAR</button>
+    </div>
+
+    <div class="csec">
+      <h3>View Layers</h3>
+      <button class="btn b-blue" onclick="toggleLayer('cameras')" id="ly-cameras">📷 Cameras ON</button>
+      <button class="btn b-blue" onclick="toggleLayer('sensors')" id="ly-sensors">📡 Sensors ON</button>
+      <button class="btn b-blue" onclick="toggleLayer('threats')" id="ly-threats">🎯 Threats ON</button>
+      <button class="btn b-blue" onclick="toggleLayer('response')" id="ly-response">🚔 Response ON</button>
+    </div>
+
+    <div class="csec">
+      <h3>Crowd Density</h3>
+      <div class="zone-bar"><span class="zone-lbl">Baseball 1–4</span><div class="bar-track"><div class="bar-fill" id="zb-b1" style="width:62%;background:#00d878"></div></div><span class="zone-pct" id="zp-b1" style="color:#00d878">62%</span></div>
+      <div class="zone-bar"><span class="zone-lbl">Baseball 5–8</span><div class="bar-track"><div class="bar-fill" id="zb-b2" style="width:54%;background:#00d878"></div></div><span class="zone-pct" id="zp-b2" style="color:#00d878">54%</span></div>
+      <div class="zone-bar"><span class="zone-lbl">Soccer 9–12</span><div class="bar-track"><div class="bar-fill" id="zb-s1" style="width:78%;background:#ffaa00"></div></div><span class="zone-pct" id="zp-s1" style="color:#ffaa00">78%</span></div>
+      <div class="zone-bar"><span class="zone-lbl">Soccer 13–16</span><div class="bar-track"><div class="bar-fill" id="zb-s2" style="width:85%;background:#ff3355"></div></div><span class="zone-pct" id="zp-s2" style="color:#ff3355">85%</span></div>
+      <div class="zone-bar"><span class="zone-lbl">Hub / Concourse</span><div class="bar-track"><div class="bar-fill" id="zb-hub" style="width:91%;background:#ff3355"></div></div><span class="zone-pct" id="zp-hub" style="color:#ff3355">91%</span></div>
+      <div class="zone-bar"><span class="zone-lbl">Parking</span><div class="bar-track"><div class="bar-fill" id="zb-park" style="width:70%;background:#ffaa00"></div></div><span class="zone-pct" id="zp-park" style="color:#ffaa00">70%</span></div>
+    </div>
+
+    <div class="csec">
+      <h3>Device Status</h3>
+      <div id="dev-list">
+        <div class="dev-row"><span class="dev-name">CAM-GATE-NORTH</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">CAM-GATE-SOUTH</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">CAM-HUB-01</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">CAM-SOCCER-E</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">SENSOR-AUDIO-1</span><span class="dev-stat s-ok">ACTIVE</span></div>
+        <div class="dev-row"><span class="dev-name">SENSOR-AUDIO-2</span><span class="dev-stat s-ok">ACTIVE</span></div>
+        <div class="dev-row"><span class="dev-name">GATE-MAIN-ENT</span><span class="dev-stat s-ok">OPEN</span></div>
+        <div class="dev-row"><span class="dev-name">GATE-SOCCER-S</span><span class="dev-stat s-ok">OPEN</span></div>
+        <div class="dev-row"><span class="dev-name">SPEAKER-ZONE-A</span><span class="dev-stat s-ok">STANDBY</span></div>
+        <div class="dev-row"><span class="dev-name">SPEAKER-ZONE-B</span><span class="dev-stat s-ok">STANDBY</span></div>
+        <div class="dev-row"><span class="dev-name">EMG-LIGHTS</span><span class="dev-stat s-ok">STANDBY</span></div>
+      </div>
+    </div>
+
+    <div class="csec">
+      <h3>Unit Assignments</h3>
+      <div id="unit-list">
+        <div class="dev-row"><span class="dev-name">SEC-01 (Hub)</span><span class="dev-stat s-ok">ON POST</span></div>
+        <div class="dev-row"><span class="dev-name">SEC-02 (Baseball)</span><span class="dev-stat s-ok">ON POST</span></div>
+        <div class="dev-row"><span class="dev-name">SEC-03 (Soccer E)</span><span class="dev-stat s-ok">ON POST</span></div>
+        <div class="dev-row"><span class="dev-name">LEO-01 (Patrol)</span><span class="dev-stat s-ok">MOBILE</span></div>
+        <div class="dev-row"><span class="dev-name">MED-01 (Staging)</span><span class="dev-stat s-ok">STANDBY</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM STAT BAR -->
+<div id="statbar">
+  <div class="stat-it">
+    <div class="stat-dot" id="dot-thr" style="background:#ff3355"></div>
+    <span class="stat-lbl">Threats</span>
+    <span class="stat-val" id="sv-thr" style="color:#ff3355">0</span>
+  </div>
+  <div class="stat-it">
+    <div class="stat-dot" style="background:#00ff88"></div>
+    <span class="stat-lbl">Cameras</span>
+    <span class="stat-val" id="sv-cam" style="color:#00ff88">32</span>
+  </div>
+  <div class="stat-it">
+    <div class="stat-dot" style="background:#00b4ff"></div>
+    <span class="stat-lbl">Gates</span>
+    <span class="stat-val" id="sv-gates" style="color:#00b4ff">14</span>
+  </div>
+  <div class="stat-it">
+    <div class="stat-dot" style="background:#ffaa00"></div>
+    <span class="stat-lbl">Alerts</span>
+    <span class="stat-val" id="sv-alerts" style="color:#ffaa00">0</span>
+  </div>
+  <div class="stat-it">
+    <div class="stat-dot" style="background:#00d878"></div>
+    <span class="stat-lbl">Crowd</span>
+    <span class="stat-val" id="sv-crowd" style="color:#00d878">2,840</span>
+  </div>
+  <div style="margin-left:auto; font-size:8px; color:#1a2a1a; letter-spacing:1px; font-family:'Share Tech Mono',monospace;">
+    RFSC SENTINEL COMMAND v2.0 — 2D TWIN
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// MAP PAN + ZOOM
+// ═══════════════════════════════════════════════════════
+const mapWrap = document.getElementById('map-wrap');
+const mapSvg  = document.getElementById('map-svg');
+let scale = 1, tx = 0, ty = 0;
+let dragging = false, lastX = 0, lastY = 0;
+
+function applyTransform() {
+  // Fit to container on first render
+  mapSvg.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+}
+
+// Initial fit
+function fitMap() {
+  const cw = mapWrap.clientWidth, ch = mapWrap.clientHeight;
+  const sw = 1100, sh = 780;
+  scale = Math.min(cw / sw, ch / sh) * 0.97;
+  tx = (cw - sw * scale) / 2;
+  ty = (ch - sh * scale) / 2;
+  applyTransform();
+}
+fitMap();
+window.addEventListener('resize', fitMap);
+
+mapWrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 1.1 : 0.91;
+  const rect = mapWrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const newScale = Math.min(Math.max(scale * delta, 0.4), 4);
+  tx = mx - (mx - tx) * (newScale / scale);
+  ty = my - (my - ty) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+}, { passive: false });
+
+mapWrap.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+window.addEventListener('mouseup',  () => dragging = false);
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  tx += e.clientX - lastX; ty += e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  applyTransform();
+});
+
+// Touch support
+let lastTouchDist = null;
+mapWrap.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) { dragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }
+  if (e.touches.length === 2) { lastTouchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); }
+});
+mapWrap.addEventListener('touchend', () => { dragging = false; lastTouchDist = null; });
+mapWrap.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1 && dragging) {
+    tx += e.touches[0].clientX - lastX; ty += e.touches[0].clientY - lastY;
+    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    applyTransform();
+  }
+  if (e.touches.length === 2 && lastTouchDist) {
+    const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    const delta = d / lastTouchDist;
+    scale = Math.min(Math.max(scale * delta, 0.4), 4);
+    lastTouchDist = d; applyTransform();
+  }
+}, { passive: false });
+
+// ═══════════════════════════════════════════════════════
+// FIELD CLICK TOOLTIPS
+// ═══════════════════════════════════════════════════════
+const fieldData = {
+  'field-1':  {name:'FIELD 1',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-01', status:'CLEAR'},
+  'field-2':  {name:'FIELD 2',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-02', status:'CLEAR'},
+  'field-3':  {name:'FIELD 3',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-03', status:'CLEAR'},
+  'field-4':  {name:'FIELD 4',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-04', status:'CLEAR'},
+  'field-5':  {name:'FIELD 5',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-05', status:'CLEAR'},
+  'field-6':  {name:'FIELD 6',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-06', status:'CLEAR'},
+  'field-7':  {name:'FIELD 7',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-07', status:'CLEAR'},
+  'field-8':  {name:'FIELD 8',  type:'Baseball', occ:'Normal',  cam:'CAM-BB-08', status:'CLEAR'},
+  'field-9':  {name:'FIELD 9',  type:'Soccer',   occ:'High',    cam:'CAM-SOC-09',status:'CLEAR'},
+  'field-10': {name:'FIELD 10', type:'Soccer',   occ:'High',    cam:'CAM-SOC-10',status:'CLEAR'},
+  'field-11': {name:'FIELD 11', type:'Soccer',   occ:'Moderate',cam:'CAM-SOC-11',status:'CLEAR'},
+  'field-12': {name:'FIELD 12', type:'Soccer',   occ:'Moderate',cam:'CAM-SOC-12',status:'CLEAR'},
+  'field-13': {name:'FIELD 13', type:'Soccer',   occ:'Critical',cam:'CAM-SOC-13',status:'CLEAR'},
+  'field-14': {name:'FIELD 14', type:'Soccer',   occ:'Critical',cam:'CAM-SOC-14',status:'CLEAR'},
+  'field-15': {name:'FIELD 15', type:'Soccer',   occ:'High',    cam:'CAM-SOC-15',status:'CLEAR'},
+  'field-16': {name:'FIELD 16', type:'Soccer',   occ:'High',    cam:'CAM-SOC-16',status:'CLEAR'},
+};
+
+// ═══════════════════════════════════════════════════════
+// THREAT / RESPONSE MARKERS (SVG-based)
+// ═══════════════════════════════════════════════════════
+const threatsLayer   = document.getElementById('layer-threats');
+const responseLayer  = document.getElementById('layer-response');
+const threatEls = [], responseEls = [];
+
+function svgThreat(x, y, type = 'threat') {
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','threat-marker');
+  g.dataset.ox = x; g.dataset.oy = y;
+
+  const colors = { threat:'#ff3355', weapon:'#ff7700', crowd:'#ffaa00' };
+  const icons  = { threat:'⚠', weapon:'🔫', crowd:'👥' };
+  const color  = colors[type] || '#ff3355';
+
+  // Pulse ring
+  const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', 18);
+  ring.setAttribute('fill','none'); ring.setAttribute('stroke', color);
+  ring.setAttribute('stroke-width','1.5'); ring.setAttribute('opacity','0.4');
+  ring.classList.add('pulse-ring');
+  g.appendChild(ring);
+
+  // Center dot
+  const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx', x); dot.setAttribute('cy', y); dot.setAttribute('r', 10);
+  dot.setAttribute('fill', color); dot.setAttribute('opacity','0.9');
+  g.appendChild(dot);
+
+  // Icon text
+  const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+  txt.setAttribute('x', x); txt.setAttribute('y', y + 4);
+  txt.setAttribute('text-anchor','middle'); txt.setAttribute('font-size','10');
+  txt.textContent = icons[type] || '⚠';
+  g.appendChild(txt);
+
+  threatsLayer.appendChild(g);
+  threatEls.push(g);
+  document.getElementById('alert-flash').style.display = 'block';
+
+  // Highlight nearby cameras
+  highlightNearbyCameras(x, y, color);
+  return g;
+}
+
+function svgResponse(x, y, type = 'police') {
+  const colors  = { police:'#1a44cc', security:'#006699', medic:'#cc0022' };
+  const letters = { police:'P', security:'S', medic:'+' };
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+  const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 9);
+  c.setAttribute('fill', colors[type]); c.setAttribute('opacity','0.95');
+  g.appendChild(c);
+
+  const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x', x); t.setAttribute('y', y + 4);
+  t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','9');
+  t.setAttribute('font-weight','bold'); t.setAttribute('fill','#fff');
+  t.textContent = letters[type];
+  g.appendChild(t);
+
+  responseLayer.appendChild(g);
+  responseEls.push(g);
+  return g;
+}
+
+function highlightNearbyCameras(x, y, color) {
+  const circles = document.querySelectorAll('#layer-cameras circle');
+  circles.forEach(c => {
+    const cx = parseFloat(c.getAttribute('cx'));
+    const cy = parseFloat(c.getAttribute('cy'));
+    if (Math.hypot(cx - x, cy - y) < 140) {
+      c.setAttribute('fill', color);
+    }
+  });
+}
+
+function resetCameraColors() {
+  document.querySelectorAll('#layer-cameras circle').forEach(c => c.setAttribute('fill','#00d878'));
+}
+
+function clearThreats() {
+  threatEls.forEach(e => e.remove()); threatEls.length = 0;
+  resetCameraColors();
+  document.getElementById('alert-flash').style.display = 'none';
+}
+
+function clearResponse() {
+  responseEls.forEach(e => e.remove()); responseEls.length = 0;
+}
+
+// Field flash on threat
+function flashField(fieldId, color) {
+  const g = document.getElementById(fieldId);
+  if (!g) return;
+  const bg = g.querySelector('rect, circle');
+  if (!bg) return;
+  const orig = bg.getAttribute('fill');
+  let on = true;
+  const id = setInterval(() => {
+    bg.setAttribute('fill', on ? color : orig); on = !on;
+  }, 400);
+  fieldFlashTimers.push(id);
+}
+let fieldFlashTimers = [];
+function clearFieldFlash() { fieldFlashTimers.forEach(clearInterval); fieldFlashTimers = []; }
+
+// Pulse animation for threat rings
+function animatePulse() {
+  const now = Date.now() / 1000;
+  document.querySelectorAll('.pulse-ring').forEach(r => {
+    const base = 14, amp = 6;
+    const s = base + amp * Math.sin(now * 3.5);
+    r.setAttribute('r', s);
+    r.setAttribute('opacity', 0.2 + 0.3 * Math.abs(Math.sin(now * 3.5)));
+  });
+  requestAnimationFrame(animatePulse);
+}
+animatePulse();
+
+// ═══════════════════════════════════════════════════════
+// LAYER TOGGLES
+// ═══════════════════════════════════════════════════════
+const layerState = { cameras: true, sensors: true, threats: true, response: true };
+function toggleLayer(name) {
+  layerState[name] = !layerState[name];
+  const el = document.getElementById('layer-' + name) || document.getElementById('layer-threats') || document.getElementById('layer-response');
+  const svgEl = name === 'threats' ? threatsLayer : name === 'response' ? responseLayer : document.getElementById('layer-' + name);
+  if (svgEl) svgEl.setAttribute('opacity', layerState[name] ? '1' : '0');
+  const btn = document.getElementById('ly-' + name);
+  if (btn) btn.style.opacity = layerState[name] ? '1' : '0.4';
+}
+
+// ═══════════════════════════════════════════════════════
+// SIMULATION SYSTEM
+// ═══════════════════════════════════════════════════════
+let simTimers = [], simAlerts = 0, simThreats = 0;
+
+const sims = {
+  weapon: [
+    [0,    () => { addEv('safe','SIM START','Systems nominal. Tournament underway.','Complex'); updatePhase('ALL CLEAR','clear'); }],
+    [3500, () => { addEv('warning','CAM DEGRADED','CAM-GATE-NORTH partial obstruction.','North Gate'); updateDev('CAM-GATE-NORTH','DEGRADED','s-warn'); simAlerts++; updateStats(); }],
+    [8000, () => { addEv('warning','ANOMALY','Audio-1 spike. Crowd noise elevated.','Baseball Zone N'); simAlerts++; updateStats(); }],
+    [13000,() => {
+      addEv('critical','🔫 WEAPON DETECTED','AI screening: probable firearm — Gate 3, adult male.','Gate 3 / North Entry');
+      svgThreat(130, 36, 'weapon');
+      updatePhase('ALERT — WEAPON SCREEN','active'); simThreats++; updateStats();
+      document.getElementById('pill-threats').textContent = '1 WEAPON ALERT';
+      document.getElementById('pill-threats').className = 'pill p-red';
+    }],
+    [17000,() => { addEv('critical','GATE 3 LOCKED','Automated gate lock. Subject held at perimeter.','Gate 3'); updateDev('GATE-MAIN-ENT','LOCKED','s-alert'); }],
+    [22000,() => { addEv('info','LEO RESPONSE','Officer en route to Gate 3. ETA 90 sec.','Gate 3'); svgResponse(130,55,'police'); svgResponse(200,55,'police'); }],
+    [32000,() => { addEv('info','CROWD DIVERTED','Gate 3 queue redirected to Gate 5.','North Entry'); svgResponse(310,36,'security'); }],
+    [42000,() => {
+      addEv('safe','RESOLVED','Subject detained. Prohibited item confirmed.','Gate 3');
+      clearThreats(); simThreats=0; updateDev('GATE-MAIN-ENT','OPEN','s-ok');
+      updatePhase('RESOLVED','response');
+      document.getElementById('pill-threats').textContent = '0 THREATS';
+      document.getElementById('pill-threats').className = 'pill p-amber'; updateStats();
+    }],
+    [56000,() => { addEv('safe','ALL CLEAR','Normal operations resumed.','Complex'); updatePhase('ALL CLEAR','clear'); clearResponse(); simAlerts=0; updateStats(); }],
+  ],
+
+  crowd_surge: [
+    [0,    () => { addEv('safe','SIM START','High attendance. Crowd monitoring active.','Complex'); updatePhase('ALL CLEAR','clear'); }],
+    [4000, () => {
+      addEv('warning','DENSITY ALERT','Fields 13–14 sideline at 90% capacity.','Soccer Zone S');
+      setZone('zb-s2','zp-s2',95,'#ff3355'); simAlerts++; updateStats();
+    }],
+    [8000, () => {
+      addEv('warning','CROWD SURGE','Sideline surge Field 14. Barrier contact.','Field 14');
+      svgThreat(952, 398, 'crowd');
+      updatePhase('CROWD ALERT','active'); simThreats++; updateStats();
+      flashField('field-14','rgba(255,170,0,0.4)');
+    }],
+    [13000,() => {
+      addEv('critical','TRAMPLING RISK','Multiple falls detected Field 14 sideline.','Field 14 Sideline');
+      document.getElementById('alert-flash').style.display='block';
+      document.getElementById('pill-threats').textContent='1 CROWD EMERGENCY';
+      document.getElementById('pill-threats').className='pill p-red';
+    }],
+    [18000,() => { addEv('info','PA BROADCAST','Announcement: clear Field 14 sideline areas.','Complex-Wide'); updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn'); }],
+    [22000,() => {
+      addEv('info','UNITS DISPATCH','SEC-03 and MED-01 responding to Field 14.','Field 14');
+      svgResponse(920,430,'security'); svgResponse(980,430,'security'); svgResponse(952,460,'medic');
+    }],
+    [33000,() => {
+      addEv('safe','CROWD DISPERSED','Sideline cleared. Barriers re-established.','Field 14');
+      clearThreats(); clearFieldFlash(); simThreats=0;
+      updatePhase('STABILIZED','response');
+      document.getElementById('pill-threats').textContent='0 THREATS';
+      document.getElementById('pill-threats').className='pill p-amber'; updateStats();
+    }],
+    [46000,() => {
+      addEv('safe','ALL CLEAR','Field 14 normalized. Event continues.','Complex');
+      updatePhase('ALL CLEAR','clear'); clearResponse(); simAlerts=0; updateStats();
+      updateDev('SPEAKER-ZONE-B','STANDBY','s-ok');
+    }],
+  ],
+
+  active_threat: [
+    [0,    () => { addEv('safe','SIM START','Tournament Day 2. Systems nominal.','Complex'); updatePhase('ALL CLEAR','clear'); }],
+    [4000, () => { addEv('warning','AUDIO SPIKE','Sensor-Audio-2 anomaly. Classification pending.','Soccer Zone N'); simAlerts++; updateStats(); }],
+    [9000, () => {
+      addEv('critical','⚠ GUNSHOT AUDIO','AI: high-confidence gunshot. UNCONFIRMED.','Field 10 / Soccer N');
+      svgThreat(717, 84, 'threat');
+      updatePhase('ALERT — UNCONFIRMED','active'); simThreats++; updateStats();
+    }],
+    [15000,() => {
+      addEv('critical','🚨 CONFIRMED THREAT','CAM visual: active shooter, Field 10 sideline.','Field 10');
+      document.getElementById('pill-threats').textContent='1 ACTIVE SHOOTER';
+      document.getElementById('pill-threats').className='pill p-red';
+      updatePhase('ACTIVE SHOOTER','active');
+      flashField('field-10','rgba(255,51,85,0.4)');
+    }],
+    [20000,() => {
+      addEv('critical','COMPLEX LOCKDOWN','All gates sealed. PA emergency broadcast.','Complex-Wide');
+      updateDev('GATE-MAIN-ENT','LOCKED','s-alert'); updateDev('GATE-SOCCER-S','LOCKED','s-alert');
+      updateDev('SPEAKER-ZONE-A','BROADCASTING','s-warn'); updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn');
+      updateDev('EMG-LIGHTS','ACTIVE','s-warn');
+      document.getElementById('pill-gates').textContent='14 GATES LOCKED';
+      document.getElementById('pill-gates').className='pill p-red';
+    }],
+    [26000,() => {
+      addEv('info','LEO DISPATCH','4 units en route. Staging Murray Rd.','Perimeter');
+      svgResponse(1060,200,'police'); svgResponse(1060,260,'police'); svgResponse(1060,320,'police'); svgResponse(1060,380,'police');
+    }],
+    [35000,() => { addEv('info','EVACUATION','Fields 1–8 shelter-in-place. Fields 9–16 evacuating east.','All Fields'); }],
+    [42000,() => {
+      addEv('critical','THREAT MOVING','Subject moving south toward concourse.','Concourse Hub');
+      clearThreats(); svgThreat(650, 320, 'threat');
+    }],
+    [52000,() => {
+      addEv('info','LEO ENGAGED','Officers on-site. Contact in soccer east zone.','Soccer Zone E');
+      svgResponse(700,380,'police'); svgResponse(700,330,'police');
+    }],
+    [63000,() => {
+      addEv('safe','THREAT NEUTRALIZED','Suspect in custody. No casualties confirmed.','Concourse Hub');
+      clearThreats(); clearFieldFlash(); simThreats=0;
+      updatePhase('RESOLUTION','response');
+      document.getElementById('pill-threats').textContent='0 THREATS';
+      document.getElementById('pill-threats').className='pill p-amber'; updateStats();
+    }],
+    [76000,() => {
+      addEv('safe','ALL CLEAR','Complex cleared by LEO. Lockdown lifted.','Complex-Wide');
+      updatePhase('ALL CLEAR','clear'); clearResponse();
+      updateDev('GATE-MAIN-ENT','OPEN','s-ok'); updateDev('GATE-SOCCER-S','OPEN','s-ok');
+      updateDev('SPEAKER-ZONE-A','STANDBY','s-ok'); updateDev('SPEAKER-ZONE-B','STANDBY','s-ok'); updateDev('EMG-LIGHTS','STANDBY','s-ok');
+      document.getElementById('pill-gates').textContent='14 GATES SECURED';
+      document.getElementById('pill-gates').className='pill p-green';
+      simAlerts=0; updateStats();
+    }],
+  ],
+
+  medical: [
+    [0,    () => { addEv('safe','SIM START','Normal operations.','Complex'); updatePhase('ALL CLEAR','clear'); }],
+    [5000, () => { addEv('warning','MEDICAL — FIELD 3','Adult male collapsed, Field 3 dugout.','Field 3'); simAlerts++; updateStats(); flashField('field-3','rgba(255,170,0,0.3)'); }],
+    [8000, () => { addEv('warning','MEDICAL — FIELD 9','Child injury, Field 9 sideline.','Field 9'); simAlerts++; updateStats(); }],
+    [12000,() => {
+      addEv('critical','MASS CASUALTY','Heat exhaustion wave — Fields 11 and 12.','Fields 11–12');
+      svgThreat(851,84,'crowd'); svgThreat(985,84,'crowd');
+      updatePhase('MASS CASUALTY EVENT','active'); simThreats+=2; updateStats();
+      document.getElementById('pill-threats').textContent='3 MEDICAL EVENTS';
+      document.getElementById('pill-threats').className='pill p-red';
+    }],
+    [17000,() => {
+      addEv('info','MED TRIAGE','Staging at Hub. EMS units summoned.','Hospitality Hub');
+      svgResponse(560,400,'medic'); svgResponse(580,430,'medic'); svgResponse(600,420,'medic');
+      svgResponse(130,300,'security'); svgResponse(851,130,'security'); svgResponse(985,130,'security');
+      updateDev('MED-01 (Staging)','ACTIVE','s-warn');
+    }],
+    [30000,() => { addEv('info','EMS ARRIVAL','Ambulances on-site. Field 3 + Field 9 patients stabilized.','Fields 3 & 9'); }],
+    [42000,() => {
+      addEv('safe','PATIENTS STABLE','All 5 treated. 2 transported. Event continues.','Complex');
+      clearThreats(); clearResponse(); clearFieldFlash(); simThreats=0;
+      updatePhase('ALL CLEAR','clear'); simAlerts=0; updateStats();
+      document.getElementById('pill-threats').textContent='0 THREATS';
+      document.getElementById('pill-threats').className='pill p-amber';
+    }],
+  ],
+
+  evacuation: [
+    [0,    () => { addEv('safe','EVAC DRILL','Initiating full complex evacuation drill.','Complex'); updatePhase('EVACUATION DRILL','active'); }],
+    [3000, () => {
+      addEv('critical','EVACUATION ORDER','PA: orderly evacuation via marked exits.','Complex-Wide');
+      updateDev('SPEAKER-ZONE-A','BROADCASTING','s-warn'); updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn'); updateDev('EMG-LIGHTS','ACTIVE','s-warn');
+    }],
+    [7000, () => { addEv('info','GATE STATUS','Gates 1–3 open for baseball egress. Gates 10–11 for soccer.','Perimeter'); }],
+    [12000,() => { addEv('warning','BOTTLENECK','Overflow parking exit congestion. Traffic control deployed.','Overflow Parking'); simAlerts++; updateStats(); }],
+    [18000,() => {
+      addEv('info','UNITS DEPLOYED','Security at choke points. LEO traffic assist Murray Rd.','Murray Rd / Exits');
+      svgResponse(26,750,'security'); svgResponse(490,740,'security'); svgResponse(660,334,'security'); svgResponse(1060,390,'security');
+      svgResponse(1080,290,'police'); svgResponse(1080,490,'police');
+    }],
+    [30000,() => { addEv('info','PROGRESS','75% evacuated. Hub area cleared.','Hub / Concourse'); }],
+    [42000,() => {
+      addEv('safe','EVACUATION COMPLETE','All patrons cleared. Complex secured.','Complex');
+      updatePhase('ALL CLEAR','clear'); clearResponse(); simAlerts=0;
+      updateDev('SPEAKER-ZONE-A','STANDBY','s-ok'); updateDev('SPEAKER-ZONE-B','STANDBY','s-ok'); updateDev('EMG-LIGHTS','STANDBY','s-ok');
+      updateStats();
+    }],
+  ],
+};
+
+function startSim() {
+  resetSim();
+  const key = document.getElementById('sim-sel').value;
+  const script = sims[key];
+  if (!script) { addEv('info','MONITORING','Status monitor active.','System'); return; }
+  script.forEach(([delay, fn]) => simTimers.push(setTimeout(fn, delay)));
+}
+
+function resetSim() {
+  simTimers.forEach(t => clearTimeout(t)); simTimers = [];
+  clearThreats(); clearResponse(); clearFieldFlash();
+  simAlerts=0; simThreats=0;
+  document.getElementById('alert-flash').style.display='none';
+  document.getElementById('pill-threats').textContent='0 THREATS';
+  document.getElementById('pill-threats').className='pill p-amber';
+  document.getElementById('pill-gates').textContent='14 GATES SECURED';
+  document.getElementById('pill-gates').className='pill p-green';
+  updatePhase('ALL CLEAR','clear');
+  document.getElementById('event-feed').innerHTML='';
+  resetDevs(); updateStats();
+  addEv('info','RESET','All systems nominal. Simulation cleared.','System');
+}
+
+// ═══════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════
+function addEv(type, title, msg, loc) {
+  const feed = document.getElementById('event-feed');
+  const d = document.createElement('div');
+  d.className = `ev ${type}`;
+  const ts = new Date().toTimeString().split(' ')[0];
+  d.innerHTML = `<div class="ev-title">${title}</div><div class="ev-loc">${loc}</div><div class="ev-meta">${ts} · ${msg}</div>`;
+  feed.insertBefore(d, feed.firstChild);
+  if (feed.children.length > 40) feed.removeChild(feed.lastChild);
+}
+
+function updatePhase(lbl, cls) {
+  const el = document.getElementById('sim-phase');
+  el.textContent = lbl; el.className = `phase-${cls}`;
+}
+
+function updateStats() {
+  document.getElementById('sv-thr').textContent    = simThreats;
+  document.getElementById('sv-alerts').textContent = simAlerts;
+  document.getElementById('dot-thr').style.boxShadow = simThreats > 0 ? '0 0 7px #ff3355' : 'none';
+}
+
+function updateDev(name, status, cls) {
+  document.querySelectorAll('.dev-row').forEach(r => {
+    const nm = r.querySelector('.dev-name');
+    if (nm && nm.textContent === name) {
+      const s = r.querySelector('.dev-stat');
+      s.textContent = status; s.className = `dev-stat ${cls}`;
+    }
+  });
+}
+
+function resetDevs() {
+  document.querySelectorAll('.dev-row').forEach(r => {
+    const nm = r.querySelector('.dev-name');
+    const st = r.querySelector('.dev-stat');
+    if (!nm || !st) return;
+    const n = nm.textContent;
+    let v = 'ONLINE', c = 's-ok';
+    if (n.startsWith('GATE'))    { v = 'OPEN'; }
+    else if (n.includes('SPEAKER') || n.includes('EMG') || n.includes('MED-01')) { v = 'STANDBY'; }
+    else if (n.startsWith('SEC')) { v = 'ON POST'; }
+    else if (n.startsWith('LEO')) { v = 'MOBILE'; }
+    st.textContent = v; st.className = `dev-stat ${c}`;
+  });
+}
+
+function setZone(barId, pctId, pct, color) {
+  document.getElementById(barId).style.width = pct + '%';
+  document.getElementById(barId).style.background = color;
+  document.getElementById(pctId).textContent = pct + '%';
+  document.getElementById(pctId).style.color = color;
+}
+
+function triggerLockdown(type) {
+  addEv('critical', type === 'full' ? '🔒 FULL LOCKDOWN' : '🔒 ZONE LOCKDOWN', 'All access points sealed.', 'Complex-Wide');
+  updateDev('GATE-MAIN-ENT','LOCKED','s-alert'); updateDev('GATE-SOCCER-S','LOCKED','s-alert');
+  document.getElementById('pill-gates').textContent='14 GATES LOCKED';
+  document.getElementById('pill-gates').className='pill p-red';
+}
+
+function evacuate() {
+  addEv('critical','⚡ EVACUATION','Evacuation order issued. PA systems active.','Complex-Wide');
+  updateDev('SPEAKER-ZONE-A','BROADCASTING','s-warn'); updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn'); updateDev('EMG-LIGHTS','ACTIVE','s-warn');
+}
+
+function dispatchResponse() {
+  svgResponse(1060,300,'police'); svgResponse(1060,500,'police');
+  svgResponse(560,380,'security'); svgResponse(200,200,'security'); svgResponse(620,130,'security');
+  addEv('info','DISPATCH','LEO + 3 security units responding.','Complex');
+}
+
+function allClear() {
+  resetSim();
+  addEv('safe','✓ ALL CLEAR','System reset. Complex secure.','Complex-Wide');
+}
+
+// ═══════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════
+function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent = [n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+}
+setInterval(tick, 1000); tick();
+
+// ═══════════════════════════════════════════════════════
+// LOADING
+// ═══════════════════════════════════════════════════════
+const steps = [
+  [12,'LOADING COMPLEX LAYOUT...'],
+  [28,'MAPPING 16 FIELDS...'],
+  [44,'REGISTERING 32 CAMERAS...'],
+  [60,'CONNECTING AUDIO SENSORS...'],
+  [76,'LINKING GATE CONTROLS...'],
+  [90,'LOADING SIMULATION SCRIPTS...'],
+  [100,'SYSTEM READY'],
+];
+let si = 0;
+const loadInt = setInterval(() => {
+  if (si >= steps.length) {
+    clearInterval(loadInt);
+    const ld = document.getElementById('loading');
+    ld.style.transition = 'opacity 0.5s'; ld.style.opacity = '0';
+    setTimeout(() => {
+      ld.style.display = 'none';
+      addEv('safe','SYSTEM ONLINE','RFSC Sentinel Command initialized. 16 fields monitored.','Complex');
+      addEv('info','EVENT ACTIVE','Youth Tournament Day 2. Attendance est: 2,840.','Complex');
+    }, 500);
+    return;
+  }
+  const [pct, msg] = steps[si++];
+  document.getElementById('ld-bar').style.width = pct + '%';
+  document.getElementById('ld-status').textContent = msg;
+}, 320);
+</script>
+</body>
+</html>
