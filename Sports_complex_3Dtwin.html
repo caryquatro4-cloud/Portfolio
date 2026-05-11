@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rantoul Family Sports Complex — Security Command</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #060b10; font-family: 'Rajdhani', 'Segoe UI', monospace; overflow: hidden; color: #aab; }
+
+  #canvas-wrap { position: fixed; inset: 0; }
+  canvas { display: block; }
+
+  #hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  /* TOP BAR */
+  #topbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 54px;
+    background: linear-gradient(180deg, rgba(3,7,14,0.98) 0%, rgba(3,7,14,0.88) 100%);
+    border-bottom: 1px solid rgba(0,210,120,0.2);
+    display: flex; align-items: center; padding: 0 18px; gap: 14px;
+    pointer-events: all; backdrop-filter: blur(8px); z-index: 20;
+  }
+  .logo {
+    font-size: 17px; font-weight: 700; letter-spacing: 3px;
+    color: #00d878; text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 30px; height: 30px; border: 2px solid #00d878; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .logo-sub { color: #3a5a40; font-weight: 400; font-size: 13px; }
+  .pills { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .pill {
+    padding: 3px 10px; border-radius: 2px; font-size: 10px;
+    font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+    border: 1px solid; font-family: 'Share Tech Mono', monospace;
+    white-space: nowrap;
+  }
+  .p-green  { color: #00ff88; border-color: rgba(0,255,136,0.35); background: rgba(0,255,136,0.07); }
+  .p-red    { color: #ff3355; border-color: rgba(255,51,85,0.35);  background: rgba(255,51,85,0.07); }
+  .p-amber  { color: #ffaa00; border-color: rgba(255,170,0,0.35);  background: rgba(255,170,0,0.07); }
+  .p-blue   { color: #00b4ff; border-color: rgba(0,180,255,0.35);  background: rgba(0,180,255,0.07); }
+  .p-teal   { color: #00d878; border-color: rgba(0,216,120,0.35);  background: rgba(0,216,120,0.07); }
+  #clock { font-family: 'Share Tech Mono', monospace; font-size: 13px; color: #00d878; letter-spacing: 2px; min-width: 76px; text-align: right; }
+
+  /* PANELS */
+  #left-panel {
+    position: absolute; top: 54px; left: 0; bottom: 0; width: 270px;
+    background: rgba(3,7,14,0.93); border-right: 1px solid rgba(0,210,120,0.13);
+    pointer-events: all; overflow: hidden; display: flex; flex-direction: column;
+    backdrop-filter: blur(8px);
+  }
+  #right-panel {
+    position: absolute; top: 54px; right: 0; bottom: 0; width: 255px;
+    background: rgba(3,7,14,0.93); border-left: 1px solid rgba(0,210,120,0.13);
+    pointer-events: all; overflow-y: auto; display: flex; flex-direction: column;
+    backdrop-filter: blur(8px);
+  }
+  #right-panel::-webkit-scrollbar { width: 3px; }
+  #right-panel::-webkit-scrollbar-thumb { background: rgba(0,216,120,0.25); }
+
+  .panel-hdr {
+    padding: 10px 14px; border-bottom: 1px solid rgba(0,210,120,0.13);
+    font-size: 10px; letter-spacing: 2px; color: #00d878; text-transform: uppercase; font-weight: 600;
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .panel-hdr::before { content:''; width:3px; height:13px; background:#00d878; border-radius:1px; }
+
+  #event-feed { flex:1; overflow-y:auto; padding:8px; }
+  #event-feed::-webkit-scrollbar { width:3px; }
+  #event-feed::-webkit-scrollbar-thumb { background:rgba(0,216,120,0.2); border-radius:2px; }
+
+  .ev {
+    padding: 9px 11px; margin-bottom: 5px; border-radius: 2px; border-left: 3px solid;
+    background: rgba(255,255,255,0.025); cursor: pointer; transition: background 0.2s;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn { from {opacity:0;transform:translateX(-8px)} to {opacity:1;transform:translateX(0)} }
+  .ev:hover { background: rgba(255,255,255,0.05); }
+  .ev.crit  { border-color: #ff3355; }
+  .ev.warn  { border-color: #ffaa00; }
+  .ev.info  { border-color: #00b4ff; }
+  .ev.safe  { border-color: #00ff88; }
+  .ev-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .ev.crit .ev-title { color:#ff3355; }
+  .ev.warn .ev-title { color:#ffaa00; }
+  .ev.info .ev-title { color:#00b4ff; }
+  .ev.safe .ev-title { color:#00ff88; }
+  .ev-loc  { font-size: 10px; color:#8899aa; margin-top:1px; }
+  .ev-meta { font-size: 9px; color:#445566; font-family:'Share Tech Mono',monospace; margin-top:2px; }
+
+  .csec { padding:11px 14px; border-bottom:1px solid rgba(0,210,120,0.09); }
+  .csec h3 { font-size:10px; letter-spacing:2px; color:#00d878; text-transform:uppercase; margin-bottom:9px; font-weight:600; }
+
+  .btn {
+    display:block; width:100%; padding:7px 11px; margin-bottom:5px;
+    border-radius:2px; border:1px solid; cursor:pointer;
+    font-family:'Rajdhani',monospace; font-size:11px; font-weight:700;
+    letter-spacing:1.5px; text-transform:uppercase; transition:all 0.15s; text-align:left;
+  }
+  .b-red   { color:#ff3355; border-color:rgba(255,51,85,0.35);  background:rgba(255,51,85,0.05); }
+  .b-red:hover   { background:rgba(255,51,85,0.18); border-color:#ff3355; box-shadow:0 0 10px rgba(255,51,85,0.2); }
+  .b-green { color:#00ff88; border-color:rgba(0,255,136,0.35); background:rgba(0,255,136,0.05); }
+  .b-green:hover { background:rgba(0,255,136,0.18); border-color:#00ff88; box-shadow:0 0 10px rgba(0,255,136,0.2); }
+  .b-blue  { color:#00b4ff; border-color:rgba(0,180,255,0.35); background:rgba(0,180,255,0.05); }
+  .b-blue:hover  { background:rgba(0,180,255,0.18); border-color:#00b4ff; }
+  .b-amber { color:#ffaa00; border-color:rgba(255,170,0,0.35);  background:rgba(255,170,0,0.05); }
+  .b-amber:hover { background:rgba(255,170,0,0.18); border-color:#ffaa00; }
+  .b-teal  { color:#00d878; border-color:rgba(0,216,120,0.35); background:rgba(0,216,120,0.05); }
+  .b-teal:hover  { background:rgba(0,216,120,0.18); border-color:#00d878; }
+
+  .sim-sel {
+    width:100%; padding:7px; background:rgba(0,216,120,0.05);
+    border:1px solid rgba(0,216,120,0.25); border-radius:2px;
+    color:#aab; font-family:'Rajdhani',monospace; font-size:11px;
+    margin-bottom:7px; cursor:pointer;
+  }
+  .sim-sel option { background:#060b10; }
+
+  #sim-phase {
+    text-align:center; padding:7px; margin:5px 0;
+    border-radius:2px; font-size:10px; font-weight:700;
+    letter-spacing:2px; text-transform:uppercase;
+  }
+  .phase-clear    { background:rgba(0,255,136,0.07); color:#00ff88; border:1px solid rgba(0,255,136,0.18); }
+  .phase-active   { background:rgba(255,51,85,0.09); color:#ff3355; border:1px solid rgba(255,51,85,0.25); }
+  .phase-response { background:rgba(0,180,255,0.07); color:#00b4ff; border:1px solid rgba(0,180,255,0.18); }
+
+  .dev-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+  .dev-name { font-size:10px; color:#667788; }
+  .dev-stat { font-size:9px; font-weight:700; letter-spacing:1px; }
+  .s-ok   { color:#00ff88; }
+  .s-warn { color:#ffaa00; }
+  .s-alert{ color:#ff3355; }
+
+  /* BOTTOM STATS BAR */
+  #statbar {
+    position:absolute; bottom:0; left:270px; right:255px; height:42px;
+    background:rgba(3,7,14,0.93); border-top:1px solid rgba(0,210,120,0.13);
+    display:flex; align-items:center; padding:0 18px; gap:28px;
+    backdrop-filter:blur(8px); pointer-events:all;
+  }
+  .stat-it { display:flex; align-items:center; gap:7px; }
+  .stat-dot { width:7px; height:7px; border-radius:50%; }
+  .stat-lbl { font-size:9px; color:#445566; letter-spacing:1px; text-transform:uppercase; }
+  .stat-val { font-size:13px; font-weight:700; font-family:'Share Tech Mono',monospace; }
+
+  /* ALERT FLASH */
+  #alert-flash {
+    position:absolute; top:58px; left:50%; transform:translateX(-50%);
+    background:rgba(255,51,85,0.13); border:1px solid rgba(255,51,85,0.6);
+    color:#ff3355; padding:9px 28px; font-size:12px; font-weight:700;
+    letter-spacing:3px; border-radius:2px; display:none;
+    animation:flashPulse 0.5s ease infinite alternate; z-index:50; backdrop-filter:blur(4px);
+    pointer-events:none;
+  }
+  @keyframes flashPulse {
+    from { opacity:0.7; box-shadow:0 0 10px rgba(255,51,85,0.2); }
+    to   { opacity:1;   box-shadow:0 0 26px rgba(255,51,85,0.5); }
+  }
+
+  /* CROWD DENSITY PANEL */
+  #crowd-panel {
+    position:absolute; top:62px; left:50%; transform:translateX(-50%);
+    width:320px; background:rgba(3,7,14,0.93); border:1px solid rgba(0,210,120,0.2);
+    border-radius:3px; padding:12px 16px; display:none;
+    pointer-events:all; backdrop-filter:blur(8px); z-index:30;
+  }
+  #crowd-panel h4 { font-size:10px; color:#00d878; letter-spacing:2px; margin-bottom:10px; }
+  .zone-bar { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .zone-lbl { font-size:10px; color:#667788; width:90px; flex-shrink:0; }
+  .bar-track { flex:1; height:8px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:2px; transition:width 0.8s ease; }
+  .zone-pct  { font-size:10px; font-family:'Share Tech Mono',monospace; width:36px; text-align:right; }
+
+  /* SCANLINES */
+  #scanlines {
+    position:absolute; inset:0; pointer-events:none; z-index:10;
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);
+  }
+
+  /* CORNER DECO */
+  .corner { position:absolute; width:18px; height:18px; pointer-events:none; }
+  .c-tl { top:58px;  left:274px;  border-top:2px solid #00d878; border-left:2px solid #00d878; }
+  .c-tr { top:58px;  right:259px; border-top:2px solid #00d878; border-right:2px solid #00d878; }
+  .c-bl { bottom:46px; left:274px;  border-bottom:2px solid #00d878; border-left:2px solid #00d878; }
+  .c-br { bottom:46px; right:259px; border-bottom:2px solid #00d878; border-right:2px solid #00d878; }
+
+  #hint {
+    position:absolute; bottom:50px; left:50%; transform:translateX(-50%);
+    font-size:9px; color:rgba(0,216,120,0.35); letter-spacing:1px; pointer-events:none;
+    font-family:'Share Tech Mono',monospace; white-space:nowrap;
+  }
+
+  /* LOADING */
+  #loading {
+    position:fixed; inset:0; background:#04070d;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1000;
+  }
+  .ld-title { font-size:26px; font-weight:700; color:#00d878; letter-spacing:6px; margin-bottom:6px; }
+  .ld-sub   { font-size:10px; color:#2a4030; letter-spacing:3px; margin-bottom:36px; }
+  .ld-wrap  { width:280px; height:2px; background:rgba(0,216,120,0.1); border-radius:1px; }
+  .ld-bar   { height:2px; background:#00d878; border-radius:1px; width:0%; transition:width 0.3s; box-shadow:0 0 8px #00d878; }
+  .ld-status { font-family:'Share Tech Mono',monospace; font-size:10px; color:#344434; margin-top:10px; letter-spacing:1px; }
+
+  /* FIELD TOOLTIP */
+  #field-tooltip {
+    position:absolute; background:rgba(3,7,14,0.95); border:1px solid rgba(0,216,120,0.3);
+    padding:10px 14px; border-radius:3px; display:none; pointer-events:none; z-index:40;
+    min-width:160px; backdrop-filter:blur(6px);
+  }
+  #field-tooltip .tt-title { font-size:12px; font-weight:700; color:#00d878; margin-bottom:6px; letter-spacing:1px; }
+  #field-tooltip .tt-row { display:flex; justify-content:space-between; font-size:10px; margin-bottom:3px; }
+  #field-tooltip .tt-lbl { color:#556677; }
+  #field-tooltip .tt-val { color:#aab; font-family:'Share Tech Mono',monospace; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-title">SENTINEL COMMAND</div>
+  <div class="ld-sub">RANTOUL FAMILY SPORTS COMPLEX — DIGITAL TWIN</div>
+  <div class="ld-wrap"><div class="ld-bar" id="ld-bar"></div></div>
+  <div class="ld-status" id="ld-status">INITIALIZING COMPLEX LAYOUT...</div>
+</div>
+
+<div id="canvas-wrap"><canvas id="c"></canvas></div>
+
+<div id="hud">
+  <div id="scanlines"></div>
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="logo">
+      <div class="logo-icon">⬡</div>
+      SENTINEL <span class="logo-sub">/ RFSC TWIN</span>
+    </div>
+    <div class="pills">
+      <span class="pill p-teal" id="pill-event">EVENT: YOUTH TOURNAMENT</span>
+      <span class="pill p-green" id="pill-cams">32 CAMERAS ONLINE</span>
+      <span class="pill p-green" id="pill-gates">14 GATES SECURED</span>
+      <span class="pill p-amber" id="pill-threats">0 ACTIVE THREATS</span>
+      <span class="pill p-blue" id="pill-crowd">CROWD: 2,840</span>
+    </div>
+    <div id="clock">00:00:00</div>
+  </div>
+
+  <!-- ALERT FLASH -->
+  <div id="alert-flash">⚠ ACTIVE THREAT — ALL UNITS RESPOND</div>
+
+  <!-- CROWD DENSITY PANEL -->
+  <div id="crowd-panel">
+    <h4>⬡ CROWD DENSITY — LIVE ZONES</h4>
+    <div class="zone-bar"><span class="zone-lbl">Baseball 1–4</span><div class="bar-track"><div class="bar-fill" id="zb-baseball1" style="width:62%;background:#00d878"></div></div><span class="zone-pct" style="color:#00d878" id="zp-baseball1">62%</span></div>
+    <div class="zone-bar"><span class="zone-lbl">Baseball 5–8</span><div class="bar-track"><div class="bar-fill" id="zb-baseball2" style="width:54%;background:#00d878"></div></div><span class="zone-pct" style="color:#00d878" id="zp-baseball2">54%</span></div>
+    <div class="zone-bar"><span class="zone-lbl">Soccer 9–12</span><div class="bar-track"><div class="bar-fill" id="zb-soccer1" style="width:78%;background:#ffaa00"></div></div><span class="zone-pct" style="color:#ffaa00" id="zp-soccer1">78%</span></div>
+    <div class="zone-bar"><span class="zone-lbl">Soccer 13–16</span><div class="bar-track"><div class="bar-fill" id="zb-soccer2" style="width:85%;background:#ff3355"></div></div><span class="zone-pct" style="color:#ff3355" id="zp-soccer2">85%</span></div>
+    <div class="zone-bar"><span class="zone-lbl">Hospitality Hub</span><div class="bar-track"><div class="bar-fill" id="zb-hub" style="width:91%;background:#ff3355"></div></div><span class="zone-pct" style="color:#ff3355" id="zp-hub">91%</span></div>
+    <div class="zone-bar"><span class="zone-lbl">Parking Lots</span><div class="bar-track"><div class="bar-fill" id="zb-park" style="width:70%;background:#ffaa00"></div></div><span class="zone-pct" style="color:#ffaa00" id="zp-park">70%</span></div>
+  </div>
+
+  <!-- LEFT PANEL -->
+  <div id="left-panel">
+    <div class="panel-hdr">Live Event Feed</div>
+    <div id="event-feed"></div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="panel-hdr">Command Controls</div>
+
+    <div class="csec">
+      <h3>Simulation</h3>
+      <select class="sim-sel" id="sim-sel">
+        <option value="clear">All Clear — Status Monitor</option>
+        <option value="weapon">Weapon Detection — Perimeter Gate</option>
+        <option value="crowd_surge">Crowd Surge — Soccer Sideline</option>
+        <option value="active_threat">Active Shooter — Complex</option>
+        <option value="medical">Mass Casualty — Multi-Field</option>
+        <option value="evacuation">Full Evacuation Protocol</option>
+      </select>
+      <div id="sim-phase" class="phase-clear">ALL CLEAR</div>
+      <button class="btn b-teal" onclick="startSim()">▶ RUN SIMULATION</button>
+      <button class="btn b-amber" onclick="resetSim()">↺ RESET ALL</button>
+    </div>
+
+    <div class="csec">
+      <h3>Emergency Actions</h3>
+      <button class="btn b-red"   onclick="triggerLockdown('full')">🔒 FULL COMPLEX LOCKDOWN</button>
+      <button class="btn b-red"   onclick="triggerLockdown('zone')">🔒 ZONE LOCKDOWN</button>
+      <button class="btn b-amber" onclick="evacuate()">⚡ INITIATE EVACUATION</button>
+      <button class="btn b-blue"  onclick="dispatchResponse()">🚔 DISPATCH SECURITY/LEO</button>
+      <button class="btn b-green" onclick="allClear()">✓ ALL CLEAR</button>
+    </div>
+
+    <div class="csec">
+      <h3>View / Controls</h3>
+      <button class="btn b-teal" onclick="setCam('top')">↓ AERIAL OVERVIEW</button>
+      <button class="btn b-teal" onclick="setCam('orbit')">⊙ ORBIT MODE</button>
+      <button class="btn b-teal" onclick="setCam('fly')">→ GROUND PATROL</button>
+      <button class="btn b-blue" onclick="toggleCrowdPanel()">📊 CROWD DENSITY PANEL</button>
+    </div>
+
+    <div class="csec">
+      <h3>View Layers</h3>
+      <button class="btn b-blue" onclick="toggleLayer('cameras')" id="ly-cameras">📷 Cameras ON</button>
+      <button class="btn b-blue" onclick="toggleLayer('sensors')" id="ly-sensors">📡 Sensors ON</button>
+      <button class="btn b-blue" onclick="toggleLayer('threats')" id="ly-threats">🎯 Threats ON</button>
+      <button class="btn b-blue" onclick="toggleLayer('response')" id="ly-response">🚔 Response ON</button>
+    </div>
+
+    <div class="csec">
+      <h3>Device Status</h3>
+      <div id="dev-list">
+        <div class="dev-row"><span class="dev-name">CAM-GATE-NORTH</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">CAM-GATE-SOUTH</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">CAM-HUB-01</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">CAM-SOCCER-E</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">CAM-PARK-OVF</span><span class="dev-stat s-ok">ONLINE</span></div>
+        <div class="dev-row"><span class="dev-name">SENSOR-AUDIO-1</span><span class="dev-stat s-ok">ACTIVE</span></div>
+        <div class="dev-row"><span class="dev-name">SENSOR-AUDIO-2</span><span class="dev-stat s-ok">ACTIVE</span></div>
+        <div class="dev-row"><span class="dev-name">GATE-MAIN-ENT</span><span class="dev-stat s-ok">OPEN</span></div>
+        <div class="dev-row"><span class="dev-name">GATE-SOCCER-S</span><span class="dev-stat s-ok">OPEN</span></div>
+        <div class="dev-row"><span class="dev-name">SPEAKER-ZONE-A</span><span class="dev-stat s-ok">STANDBY</span></div>
+        <div class="dev-row"><span class="dev-name">SPEAKER-ZONE-B</span><span class="dev-stat s-ok">STANDBY</span></div>
+        <div class="dev-row"><span class="dev-name">EMG-LIGHTS</span><span class="dev-stat s-ok">STANDBY</span></div>
+      </div>
+    </div>
+
+    <div class="csec">
+      <h3>Unit Assignments</h3>
+      <div id="unit-list">
+        <div class="dev-row"><span class="dev-name">SEC-01 (Hub)</span><span class="dev-stat s-ok">ON POST</span></div>
+        <div class="dev-row"><span class="dev-name">SEC-02 (Baseball)</span><span class="dev-stat s-ok">ON POST</span></div>
+        <div class="dev-row"><span class="dev-name">SEC-03 (Soccer E)</span><span class="dev-stat s-ok">ON POST</span></div>
+        <div class="dev-row"><span class="dev-name">LEO-01 (Patrol)</span><span class="dev-stat s-ok">MOBILE</span></div>
+        <div class="dev-row"><span class="dev-name">MED-01 (Staging)</span><span class="dev-stat s-ok">STANDBY</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIELD TOOLTIP -->
+  <div id="field-tooltip">
+    <div class="tt-title" id="tt-title">FIELD 1</div>
+    <div class="tt-row"><span class="tt-lbl">Type</span><span class="tt-val" id="tt-type">Baseball</span></div>
+    <div class="tt-row"><span class="tt-lbl">Occupancy</span><span class="tt-val" id="tt-occ">Normal</span></div>
+    <div class="tt-row"><span class="tt-lbl">Camera</span><span class="tt-val" id="tt-cam">ONLINE</span></div>
+    <div class="tt-row"><span class="tt-lbl">Status</span><span class="tt-val" id="tt-stat">CLEAR</span></div>
+  </div>
+
+  <!-- BOTTOM STAT BAR -->
+  <div id="statbar">
+    <div class="stat-it">
+      <div class="stat-dot" style="background:#ff3355;box-shadow:0 0 5px #ff3355" id="dot-thr"></div>
+      <span class="stat-lbl">Threats</span>
+      <span class="stat-val" style="color:#ff3355" id="sv-thr">0</span>
+    </div>
+    <div class="stat-it">
+      <div class="stat-dot" style="background:#00ff88"></div>
+      <span class="stat-lbl">Cameras</span>
+      <span class="stat-val" style="color:#00ff88" id="sv-cam">32</span>
+    </div>
+    <div class="stat-it">
+      <div class="stat-dot" style="background:#00b4ff"></div>
+      <span class="stat-lbl">Gates</span>
+      <span class="stat-val" style="color:#00b4ff" id="sv-gates">14</span>
+    </div>
+    <div class="stat-it">
+      <div class="stat-dot" style="background:#ffaa00"></div>
+      <span class="stat-lbl">Alerts</span>
+      <span class="stat-val" style="color:#ffaa00" id="sv-alerts">0</span>
+    </div>
+    <div class="stat-it">
+      <div class="stat-dot" style="background:#00d878"></div>
+      <span class="stat-lbl">Crowd</span>
+      <span class="stat-val" style="color:#00d878" id="sv-crowd">2,840</span>
+    </div>
+    <div style="margin-left:auto; font-size:9px; color:#2a3a2a; letter-spacing:1px; font-family:'Share Tech Mono',monospace;">
+      RFSC DIGITAL TWIN v1.0 &nbsp;|&nbsp; SENTINEL COMMAND
+    </div>
+  </div>
+
+  <div id="hint">DRAG TO ROTATE &nbsp;·&nbsp; SCROLL TO ZOOM &nbsp;·&nbsp; RIGHT-DRAG TO PAN</div>
+
+  <!-- CORNER DECO -->
+  <div class="corner c-tl"></div>
+  <div class="corner c-tr"></div>
+  <div class="corner c-bl"></div>
+  <div class="corner c-br"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ============================================================
+//  RANTOUL FAMILY SPORTS COMPLEX — 2.5D DIGITAL TWIN
+//  Layout sourced from Facility-Map-FINAL-3.png
+//  16 fields (8 baseball + 8 soccer), Hospitality Hub, parking
+// ============================================================
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060b10);
+scene.fog = new THREE.FogExp2(0x060b10, 0.00055);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 4000);
+camera.position.set(0, 500, 600);
+camera.lookAt(0, 0, 0);
+
+// LIGHTING
+const ambLight = new THREE.AmbientLight(0x102820, 0.9);
+scene.add(ambLight);
+const sun = new THREE.DirectionalLight(0x80ffcc, 0.7);
+sun.position.set(200, 400, 100);
+sun.castShadow = true;
+scene.add(sun);
+const fillLight = new THREE.DirectionalLight(0x004422, 0.4);
+fillLight.position.set(-200, 200, -200);
+scene.add(fillLight);
+
+// ============================================================
+// COMPLEX GEOMETRY — modeled from RFSC facility map
+// Scale: 1 unit ≈ 1 foot. Complex ~1300ft W × 900ft H
+// Coordinate origin = complex center
+// ============================================================
+
+const complexGroup = new THREE.Group();
+scene.add(complexGroup);
+
+function mat(color, emissive = 0x000000, opacity = 1, transparent = false) {
+  return new THREE.MeshLambertMaterial({ color, emissive, opacity, transparent });
+}
+
+// Ground plane
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(1600, 1200),
+  mat(0x0a1a0a)
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+complexGroup.add(ground);
+
+// Helper: draw a rectangle (top-down box)
+function box(w, h, d, color, x, y, z, emissive = 0x000000) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color, emissive));
+  m.position.set(x, y, z);
+  m.receiveShadow = true; m.castShadow = true;
+  complexGroup.add(m);
+  return m;
+}
+
+function cylinder(r, h, color, x, y, z, emissive=0) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 20), mat(color, emissive));
+  m.position.set(x, y, z);
+  complexGroup.add(m);
+  return m;
+}
+
+// ---- GROUND SURFACES ----
+// Turf / infield dirt color coding
+const TURF_GREEN    = 0x1a6b1a;
+const DIRT_ORANGE   = 0x8B4513;
+const PATH_GRAY     = 0x2a2a2e;
+const CONCRETE_GRAY = 0x1e1e22;
+const GRASS_DARK    = 0x103010;
+const HUB_WHITE     = 0x1a2830;
+const FENCE_GRAY    = 0x222228;
+
+// ---- BASEBALL FIELDS 1–4 (northwest quadrant) ----
+// Each baseball diamond: ~200ft side fan. Arranged in 2x2 cluster
+const baseballDefs = [
+  // [name, centerX, centerZ]
+  ['FIELD 1', -320,  -220],
+  ['FIELD 4', -320,   -20],  // typo fixed: map shows 4 top-left
+  ['FIELD 2', -110,  -220],
+  ['FIELD 3', -110,   -20],
+];
+
+const fieldObjects = [];
+
+baseballDefs.forEach(([name, cx, cz]) => {
+  // Outfield green
+  const of_mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(120, 32, Math.PI * 0.5, Math.PI * 1.5),
+    mat(TURF_GREEN)
+  );
+  of_mesh.rotation.x = -Math.PI / 2;
+  of_mesh.position.set(cx, 0.3, cz);
+  complexGroup.add(of_mesh);
+
+  // Infield dirt
+  const inf = new THREE.Mesh(
+    new THREE.CircleGeometry(72, 20, Math.PI * 0.5, Math.PI * 1.5),
+    mat(DIRT_ORANGE)
+  );
+  inf.rotation.x = -Math.PI / 2;
+  inf.position.set(cx, 0.4, cz);
+  complexGroup.add(inf);
+
+  // Backstop wall
+  box(12, 18, 5, 0x333340, cx - 80, 9, cz);
+  box(5, 18, 70, 0x333340, cx - 50, 9, cz);
+
+  // Dugouts
+  box(55, 4, 14, 0x1a1a22, cx + 15, 2, cz - 38);
+  box(55, 4, 14, 0x1a1a22, cx + 15, 2, cz + 38);
+
+  // Scoring tower (yellow diamond per map legend)
+  const tower = box(14, 22, 14, 0xd4a000, cx, 11, cz);
+  tower.material.emissive = new THREE.Color(0x2a1800);
+
+  // Field label via stored object
+  fieldObjects.push({ name, cx, cz, type: 'baseball', mesh: of_mesh });
+});
+
+// ---- BASEBALL FIELDS 5–8 (southwest quadrant) ----
+const baseball2Defs = [
+  ['FIELD 5', -110,  180],
+  ['FIELD 8', -320,  180],
+  ['FIELD 6', -110,  380],
+  ['FIELD 7', -320,  380],
+];
+
+baseball2Defs.forEach(([name, cx, cz]) => {
+  const of_mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(120, 32, Math.PI * 0.5, Math.PI * 1.5),
+    mat(TURF_GREEN)
+  );
+  of_mesh.rotation.x = -Math.PI / 2;
+  of_mesh.position.set(cx, 0.3, cz);
+  complexGroup.add(of_mesh);
+
+  const inf = new THREE.Mesh(
+    new THREE.CircleGeometry(72, 20, Math.PI * 0.5, Math.PI * 1.5),
+    mat(DIRT_ORANGE)
+  );
+  inf.rotation.x = -Math.PI / 2;
+  inf.position.set(cx, 0.4, cz);
+  complexGroup.add(inf);
+
+  box(12, 18, 5, 0x333340, cx - 80, 9, cz);
+  box(5, 18, 70, 0x333340, cx - 50, 9, cz);
+  box(55, 4, 14, 0x1a1a22, cx + 15, 2, cz - 38);
+  box(55, 4, 14, 0x1a1a22, cx + 15, 2, cz + 38);
+  const tower = box(14, 22, 14, 0xd4a000, cx, 11, cz);
+  tower.material.emissive = new THREE.Color(0x2a1800);
+
+  fieldObjects.push({ name, cx, cz, type: 'baseball', mesh: of_mesh });
+});
+
+// ---- SOCCER FIELDS 9–16 (east half) ----
+// Soccer fields: ~360ft × 225ft each
+const soccerDefs = [
+  ['FIELD 9',  180, -310],
+  ['FIELD 10', 380, -310],
+  ['FIELD 11', 570, -310],
+  ['FIELD 12', 750, -310],
+  ['FIELD 13', 570,  -50],
+  ['FIELD 14', 750,  -50],
+  ['FIELD 15', 570,  200],
+  ['FIELD 16', 750,  200],
+];
+
+soccerDefs.forEach(([name, cx, cz]) => {
+  const s_mesh = box(170, 1, 100, TURF_GREEN, cx, 0.5, cz);
+  // Field lines (lighter strip)
+  box(168, 0.3, 1, 0x40c040, cx, 1, cz - 49);
+  box(168, 0.3, 1, 0x40c040, cx, 1, cz + 49);
+  box(1, 0.3, 100, 0x40c040, cx - 84, 1, cz);
+  box(1, 0.3, 100, 0x40c040, cx + 84, 1, cz);
+  // Center circle
+  const cc = new THREE.Mesh(
+    new THREE.RingGeometry(16, 17, 24),
+    mat(0x40c040)
+  );
+  cc.rotation.x = -Math.PI / 2;
+  cc.position.set(cx, 1, cz);
+  complexGroup.add(cc);
+  // Goals
+  box(4, 6, 20, 0xffffff, cx - 88, 3, cz);
+  box(4, 6, 20, 0xffffff, cx + 88, 3, cz);
+
+  fieldObjects.push({ name, cx, cz, type: 'soccer', mesh: s_mesh });
+});
+
+// ---- HOSPITALITY HUB (center) ----
+const hubBase = box(120, 3, 100, 0x1a2420, 80, 1.5, 20);
+box(70, 24, 60, 0x162022, 80, 12, 20); // Main building
+box(72, 4, 62, 0x1e2e2a, 80, 24, 20); // Roof
+
+// Main office M marker
+const officeBox = box(22, 26, 22, 0x1a2060, 80, 13, 0);
+officeBox.material.emissive = new THREE.Color(0x000820);
+
+// Play area (playground - colorful)
+const playBase = box(40, 1, 40, 0x1a2220, 30, 0.5, 60);
+cylinder(12, 8, 0xff6600, 24, 4, 55); // slide structure
+cylinder(6, 12, 0x0066aa, 36, 6, 65); // climbing structure
+box(20, 8, 4, 0x006688, 30, 4, 80);  // climbing wall
+
+// Water feature / pond near hub
+const pond = new THREE.Mesh(
+  new THREE.CircleGeometry(25, 24),
+  mat(0x004466, 0x001122)
+);
+pond.rotation.x = -Math.PI / 2;
+pond.position.set(140, 0.5, -200);
+complexGroup.add(pond);
+
+// Retention pond (bottom center)
+const pond2 = new THREE.Mesh(
+  new THREE.CircleGeometry(40, 24),
+  mat(0x003355, 0x000f22)
+);
+pond2.rotation.x = -Math.PI / 2;
+pond2.position.set(30, 0.5, 460);
+complexGroup.add(pond2);
+
+// ---- PARKING LOTS ----
+box(180, 1, 90, CONCRETE_GRAY, -110, 0.3, 80);   // West parking
+box(200, 1, 90, CONCRETE_GRAY, 150, 0.3, -60);   // Central parking
+
+// Overflow parking (olive/brown)
+box(120, 1, 100, 0x2a3010, 40, 0.3, 330);
+// Overflow Parking "P" markers
+for (let i = 0; i < 6; i++) {
+  box(12, 3, 55, 0x1a1a1e, 0 + i*22, 1.5, 330);
+}
+
+// ---- PATHS / CONCOURSES ----
+box(30, 1, 800, PATH_GRAY,  -5, 0.2,  80);  // Central north-south path
+box(600, 1, 22, PATH_GRAY,  80, 0.2, -120); // East-west main concourse
+box(200, 1, 18, PATH_GRAY, -200, 0.2, 100); // Baseball connector
+
+// ---- PERIMETER FENCE ----
+const perim = new THREE.Line(
+  (() => {
+    const pts = [
+      new THREE.Vector3(-480,-0.5,-400),
+      new THREE.Vector3(860,-0.5,-400),
+      new THREE.Vector3(860,-0.5,500),
+      new THREE.Vector3(-480,-0.5,500),
+      new THREE.Vector3(-480,-0.5,-400),
+    ];
+    return new THREE.BufferGeometry().setFromPoints(pts);
+  })(),
+  new THREE.LineBasicMaterial({ color: 0x00d878, opacity: 0.3, transparent: true })
+);
+scene.add(perim);
+
+// Murray Rd (right edge)
+box(10, 1, 1000, 0x333336, 880, 0.2, 50);
+
+// Stone Bridge Dr (top)
+box(900, 1, 12, 0x333336, 200, 0.2, -420);
+
+// ---- VETS MEMORIAL ----
+cylinder(6, 35, 0xaaaaaa, -215, 17, 200);
+box(18, 2, 18, 0x888888, -215, 1, 200);
+
+// ---- MAINTENANCE SHED ----
+box(50, 18, 38, 0x2a2a2e, 80, 9, 480);
+
+// ============================================================
+//  CAMERA POSITIONS — 32 cameras covering all zones
+// ============================================================
+const camPositions = [
+  // Baseball zone N
+  [-430, 20, -280], [-430, 20, -120], [-430, 20,  80], [-430, 20, 250],
+  [-200, 20, -350], [-110, 20, -280], [-320, 20, -350],
+  // Baseball zone S
+  [-430, 20, 200], [-430, 20, 350], [-200, 20, 450],
+  // Hub / concourse
+  [80, 20, -160], [80, 20,  20], [80, 20, 100],
+  [-10, 20, 80], [170, 20, 80],
+  // Soccer zone N
+  [100, 20, -380], [280, 20, -380], [480, 20, -380], [680, 20, -380],
+  [850, 20, -380],
+  // Soccer zone S
+  [480, 20, -130], [680, 20, -130], [850, 20,  -50],
+  [480, 20,  120], [680, 20, 300], [850, 20, 300],
+  // Parking
+  [20, 20,  80], [-110, 20, 130], [150, 20, -80],
+  [40, 20, 340], [-5, 20, 250],
+  // Murray Rd gate
+  [860, 20, -400],
+];
+
+// Gunshot / acoustic sensor positions (fewer, high-coverage)
+const sensorPositions = [
+  [-230, 30, -130], [-230, 30,  230],
+  [80, 30, -130],   [80,  30,  100],
+  [380, 30, -310],  [680, 30, -160],
+  [680, 30,  200],
+];
+
+const markers = { cameras: [], sensors: [], threats: [], response: [] };
+const layers = { cameras: true, sensors: true, threats: true, response: true };
+
+function makeSprite(type, color, size) {
+  const cvs = document.createElement('canvas');
+  cvs.width = 64; cvs.height = 64;
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, 64, 64);
+
+  if (type === 'camera') {
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(32, 32, 14, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(23, 25, 13, 10);
+    ctx.beginPath(); ctx.moveTo(36,27); ctx.lineTo(45,22); ctx.lineTo(45,42); ctx.lineTo(36,37); ctx.fill();
+  } else if (type === 'sensor') {
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(32, 32, 13, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,200,0,0.5)'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(32, 32, 22, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('📡', 32, 34);
+  } else if (type === 'threat') {
+    ctx.fillStyle = 'rgba(255,51,85,0.25)';
+    ctx.beginPath(); ctx.arc(32, 32, 30, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ff3355';
+    ctx.beginPath(); ctx.arc(32, 32, 18, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⚠', 32, 32);
+  } else if (type === 'weapon') {
+    ctx.fillStyle = 'rgba(255,120,0,0.25)';
+    ctx.beginPath(); ctx.arc(32, 32, 28, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ff7700';
+    ctx.beginPath(); ctx.arc(32, 32, 16, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🔫', 32, 33);
+  } else if (type === 'police') {
+    ctx.fillStyle = '#1a44cc';
+    ctx.beginPath(); ctx.arc(32, 32, 16, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('★', 32, 32);
+  } else if (type === 'security') {
+    ctx.fillStyle = '#006699';
+    ctx.beginPath(); ctx.arc(32, 32, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '13px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🛡', 32, 34);
+  } else if (type === 'medic') {
+    ctx.fillStyle = '#cc0022';
+    ctx.beginPath(); ctx.arc(32, 32, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🚑', 32, 34);
+  } else if (type === 'crowd') {
+    ctx.fillStyle = 'rgba(255,165,0,0.3)';
+    ctx.beginPath(); ctx.arc(32, 32, 28, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffaa00';
+    ctx.beginPath(); ctx.arc(32, 32, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('👥', 32, 34);
+  }
+
+  const tex = new THREE.CanvasTexture(cvs);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+  spr.scale.set(size, size, 1);
+  return spr;
+}
+
+function addCameras() {
+  camPositions.forEach((pos, i) => {
+    const s = makeSprite('camera', '#00d878', 16);
+    s.position.set(pos[0], pos[1] + 20, pos[2]);
+    s.userData.baseY = s.position.y;
+    scene.add(s); markers.cameras.push(s);
+  });
+}
+
+function addSensors() {
+  sensorPositions.forEach((pos) => {
+    const s = makeSprite('sensor', '#ffaa00', 18);
+    s.position.set(pos[0], pos[1] + 10, pos[2]);
+    scene.add(s); markers.sensors.push(s);
+  });
+}
+
+addCameras();
+addSensors();
+
+// ============================================================
+//  THREAT / RESPONSE SYSTEM
+// ============================================================
+let threatMarkers = [];
+let responseMarkers = [];
+let pulseT = 0;
+
+function spawnThreat(x, z, type = 'threat') {
+  const s = makeSprite(type, '#ff3355', type === 'weapon' ? 22 : 26);
+  s.position.set(x, 50, z);
+  scene.add(s);
+  if (type === 'threat') threatMarkers.push(s);
+  else markers.threats.push(s);
+  // Highlight nearby cameras red
+  markers.cameras.forEach(c => {
+    const d = Math.hypot(c.position.x - x, c.position.z - z);
+    if (d < 200) c.material.color.setHex(0xff3355);
+  });
+  document.getElementById('alert-flash').style.display = 'block';
+}
+
+function spawnCrowdAlert(x, z) {
+  const s = makeSprite('crowd', '#ffaa00', 24);
+  s.position.set(x, 45, z);
+  scene.add(s); markers.threats.push(s);
+}
+
+function moveThreat(mk, x, z, cb) {
+  if (!mk) return;
+  const sx = mk.position.x, sz = mk.position.z;
+  let f = 0; const frames = 60;
+  const id = setInterval(() => {
+    f++; const t = f / frames;
+    mk.position.x = sx + (x - sx) * t;
+    mk.position.z = sz + (z - sz) * t;
+    markers.cameras.forEach(c => c.material.color.setHex(0x00d878));
+    markers.cameras.forEach(c => {
+      if (Math.hypot(c.position.x - mk.position.x, c.position.z - mk.position.z) < 200)
+        c.material.color.setHex(0xff3355);
+    });
+    if (f >= frames) { clearInterval(id); if (cb) cb(); }
+  }, 16);
+}
+
+function spawnResponse(type, positions) {
+  positions.forEach(([x, z]) => {
+    const s = makeSprite(type, '#1a44cc', 18);
+    s.position.set(x, 40, z);
+    scene.add(s); responseMarkers.push(s); markers.response.push(s);
+  });
+}
+
+function clearThreats() {
+  [...threatMarkers, ...markers.threats].forEach(m => scene.remove(m));
+  threatMarkers = []; markers.threats = [];
+  markers.cameras.forEach(c => c.material.color.setHex(0x00d878));
+  document.getElementById('alert-flash').style.display = 'none';
+}
+
+function clearResponse() {
+  responseMarkers.forEach(m => scene.remove(m));
+  responseMarkers = []; markers.response = [];
+}
+
+// ============================================================
+//  CAMERA CONTROLS
+// ============================================================
+let camMode = 'orbit';
+let isDown = false, mx = 0, my = 0;
+let camTheta = 0.4, camPhi = 0.55, camDist = 800;
+let camTarget = new THREE.Vector3(100, 0, 50);
+let camTargetGoal = new THREE.Vector3(100, 0, 50);
+const keys = {};
+document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+document.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
+
+canvas.addEventListener('mousedown', e => { isDown = true; mx = e.clientX; my = e.clientY; });
+canvas.addEventListener('mouseup',   () => isDown = false);
+canvas.addEventListener('mousemove', e => {
+  if (!isDown) return;
+  const dx = e.clientX - mx, dy = e.clientY - my;
+  mx = e.clientX; my = e.clientY;
+  if (e.buttons === 1) {
+    camTheta -= dx * 0.005;
+    camPhi = Math.max(0.05, Math.min(1.5, camPhi - dy * 0.005));
+  } else if (e.buttons === 2) {
+    const right = new THREE.Vector3(-Math.sin(camTheta), 0, Math.cos(camTheta));
+    camTargetGoal.addScaledVector(right, dx * 0.6);
+    camTargetGoal.addScaledVector(new THREE.Vector3(0,1,0), dy * 0.6);
+  }
+});
+canvas.addEventListener('wheel', e => {
+  camDist = Math.max(80, Math.min(1600, camDist + e.deltaY * 0.6));
+}, { passive: true });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+function updateCamera() {
+  camTarget.lerp(camTargetGoal, 0.08);
+  if (camMode === 'orbit' || camMode === 'top') {
+    const x = camTarget.x + camDist * Math.sin(camTheta) * Math.cos(camPhi);
+    const y = camTarget.y + camDist * Math.sin(camPhi);
+    const z = camTarget.z + camDist * Math.cos(camTheta) * Math.cos(camPhi);
+    camera.position.lerp(new THREE.Vector3(x, y, z), 0.06);
+    camera.lookAt(camTarget);
+  } else if (camMode === 'fly') {
+    const spd = 3;
+    const dir = new THREE.Vector3(-Math.sin(camTheta), 0, -Math.cos(camTheta));
+    const right = new THREE.Vector3(Math.cos(camTheta), 0, -Math.sin(camTheta));
+    if (keys['w']) camera.position.addScaledVector(dir, spd);
+    if (keys['s']) camera.position.addScaledVector(dir, -spd);
+    if (keys['a']) camera.position.addScaledVector(right, -spd);
+    if (keys['d']) camera.position.addScaledVector(right, spd);
+    if (keys['q']) camera.position.y += spd;
+    if (keys['e']) camera.position.y -= spd;
+    camera.rotation.y = camTheta;
+  }
+}
+
+function setCam(mode) {
+  camMode = mode;
+  if (mode === 'top') {
+    camPhi = 1.45; camDist = 1000; camTheta = 0;
+    document.getElementById('hint').textContent = 'AERIAL OVERVIEW — SCROLL TO ZOOM';
+  } else if (mode === 'fly') {
+    camMode = 'fly'; camPhi = 0.08; camDist = 80;
+    document.getElementById('hint').textContent = 'GROUND PATROL — WASD MOVE · QE ASCEND/DESCEND';
+  } else {
+    document.getElementById('hint').textContent = 'DRAG TO ROTATE · SCROLL TO ZOOM · RIGHT-DRAG TO PAN';
+  }
+}
+
+// ============================================================
+//  SIMULATION SYSTEM
+// ============================================================
+let simTimers = [];
+let simAlerts = 0, simThreats = 0;
+let crowdPanelVisible = false;
+
+const simScripts = {
+
+  weapon: [
+    [0, () => {
+      addEvent('safe','SIM START','All systems nominal. Tournament underway.','Complex');
+      updatePhase('ALL CLEAR','clear');
+    }],
+    [3500, () => {
+      addEvent('warning','CAM DEGRADED','CAM-GATE-NORTH: partial obstruction detected.','North Gate');
+      updateDev('CAM-GATE-NORTH','DEGRADED','s-warn'); simAlerts++;
+    }],
+    [8000, () => {
+      addEvent('warning','ANOMALY','Sensor-Audio-1 spike. Crowd noise elevated.','Baseball Zone N');
+      simAlerts++; updateStats();
+    }],
+    [13000, () => {
+      addEvent('critical','WEAPON DETECTED','AI-screening: probable firearm — adult male, Gate 3.','Gate 3 / North Entry');
+      spawnThreat(-260, -380, 'weapon');
+      updatePhase('ALERT — WEAPON SCREEN','active');
+      simThreats++; updateStats();
+      document.getElementById('pill-threats').textContent = '1 WEAPON ALERT';
+      document.getElementById('pill-threats').className = 'pill p-red';
+    }],
+    [17000, () => {
+      addEvent('critical','GATE 3 LOCKED','Automated gate lock. Subject held at perimeter.','Gate 3');
+      updateDev('GATE-MAIN-ENT','LOCKED','s-alert');
+      document.getElementById('pill-gates').textContent = '1 GATE LOCKED';
+      document.getElementById('pill-gates').className = 'pill p-red';
+    }],
+    [22000, () => {
+      addEvent('info','LEO RESPONSE','Officer en route to Gate 3. ETA 90 sec.','Gate 3');
+      spawnResponse('police', [[-300, -420], [-250, -420]]);
+    }],
+    [30000, () => {
+      addEvent('info','CROWD MANAGEMENT','Families in Gate 3 queue diverted to Gate 5.','North Entry');
+      spawnCrowdAlert(-200, -360);
+    }],
+    [40000, () => {
+      addEvent('safe','RESOLVED','Subject detained. Prohibited item confirmed. Transferred to LEO.','Gate 3');
+      clearThreats(); simThreats = 0;
+      updateDev('GATE-MAIN-ENT','OPEN','s-ok');
+      updatePhase('RESOLVED','response');
+      document.getElementById('pill-gates').textContent = '14 GATES SECURED';
+      document.getElementById('pill-gates').className = 'pill p-green';
+      document.getElementById('pill-threats').textContent = '0 ACTIVE THREATS';
+      document.getElementById('pill-threats').className = 'pill p-amber';
+      updateStats();
+    }],
+    [55000, () => {
+      addEvent('safe','ALL CLEAR','Normal operations resumed. Gate 3 re-opened.','Complex');
+      updatePhase('ALL CLEAR','clear');
+      clearResponse(); simAlerts = 0; updateStats();
+    }],
+  ],
+
+  crowd_surge: [
+    [0, () => {
+      addEvent('safe','SIM START','High attendance event. Crowd monitoring active.','Complex');
+      updatePhase('ALL CLEAR','clear');
+    }],
+    [4000, () => {
+      addEvent('warning','DENSITY ALERT','Soccer Fields 13–14 sideline at 88% capacity.','Soccer Zone S');
+      simAlerts++; updateStats();
+      document.getElementById('zb-soccer2').style.width = '95%';
+      document.getElementById('zp-soccer2').textContent = '95%';
+    }],
+    [8000, () => {
+      addEvent('warning','CROWD SURGE','Sideline surge detected Field 14. Barrier contact.','Field 14');
+      spawnCrowdAlert(750, -50);
+      updatePhase('CROWD ALERT','active'); simThreats++; updateStats();
+    }],
+    [13000, () => {
+      addEvent('critical','TRAMPLING RISK','CAM-SOCCER-E: multiple falls detected. Medical risk.','Field 14 Sideline');
+      document.getElementById('alert-flash').style.display = 'block';
+      document.getElementById('pill-threats').textContent = '1 CROWD EMERGENCY';
+      document.getElementById('pill-threats').className = 'pill p-red';
+    }],
+    [18000, () => {
+      addEvent('info','SPEAKER ACTIVE','PA announcement: clear Field 14 sideline areas.','Complex-Wide');
+      updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn');
+    }],
+    [22000, () => {
+      addEvent('info','UNITS DISPATCH','SEC-03 and MED-01 responding to Field 14.','Field 14');
+      spawnResponse('security', [[730, -80], [770, -80]]);
+      spawnResponse('medic', [[750, -10]]);
+    }],
+    [32000, () => {
+      addEvent('info','CROWD DISPERSED','Sideline cleared. Barriers re-established.','Field 14');
+      clearThreats(); simThreats = 0;
+      updatePhase('STABILIZED','response');
+      document.getElementById('pill-threats').textContent = '0 ACTIVE THREATS';
+      document.getElementById('pill-threats').className = 'pill p-amber';
+      updateStats();
+    }],
+    [45000, () => {
+      addEvent('safe','ALL CLEAR','Field 14 operations normalized. Event continues.','Complex');
+      updatePhase('ALL CLEAR','clear');
+      clearResponse(); simAlerts = 0; updateStats();
+      updateDev('SPEAKER-ZONE-B','STANDBY','s-ok');
+    }],
+  ],
+
+  active_threat: [
+    [0, () => {
+      addEvent('safe','SIM START','Tournament day 2. All systems nominal.','Complex');
+      updatePhase('ALL CLEAR','clear');
+    }],
+    [4000, () => {
+      addEvent('warning','AUDIO SPIKE','Sensor-Audio-2: acoustic anomaly. Classification pending.','Soccer Zone N');
+      simAlerts++; updateStats();
+    }],
+    [9000, () => {
+      addEvent('critical','⚠ GUNSHOT AUDIO','AI audio model: high-confidence gunshot. UNCONFIRMED.','Field 10 / Soccer N');
+      spawnThreat(380, -310);
+      updatePhase('ALERT — UNCONFIRMED','active');
+      simThreats++; updateStats();
+    }],
+    [15000, () => {
+      addEvent('critical','🚨 CONFIRMED THREAT','CAM-Soccer-N visual: active shooter. Field 10 sideline.','Field 10');
+      document.getElementById('pill-threats').textContent = '1 ACTIVE SHOOTER';
+      document.getElementById('pill-threats').className = 'pill p-red';
+      updatePhase('ACTIVE SHOOTER','active');
+    }],
+    [20000, () => {
+      addEvent('critical','COMPLEX LOCKDOWN','All gates sealed. PA emergency broadcast active.','Complex-Wide');
+      updateDev('GATE-MAIN-ENT','LOCKED','s-alert');
+      updateDev('GATE-SOCCER-S','LOCKED','s-alert');
+      updateDev('SPEAKER-ZONE-A','BROADCASTING','s-warn');
+      updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn');
+      updateDev('EMG-LIGHTS','ACTIVE','s-warn');
+      document.getElementById('pill-gates').textContent = '14 GATES LOCKED';
+      document.getElementById('pill-gates').className = 'pill p-red';
+    }],
+    [26000, () => {
+      addEvent('info','LEO DISPATCH','4 LEO units en route. ETA 3 min. Staging at Murray Rd.','Perimeter');
+      spawnResponse('police', [[860, -380], [860, -300], [860, -250], [860, -200]]);
+    }],
+    [32000, () => {
+      addEvent('info','EVACUATION','Shelter-in-place for fields 1–8. Fields 9–16 evacuating east.','All Fields');
+      if (threatMarkers[0]) moveThreat(threatMarkers[0], 480, -250);
+    }],
+    [40000, () => {
+      addEvent('critical','THREAT MOVING','Subject moving south toward concession area.','Concourse Hub');
+      if (threatMarkers[0]) moveThreat(threatMarkers[0], 200, -130);
+    }],
+    [50000, () => {
+      addEvent('info','LEO ENGAGED','Officers on-site. Contact in soccer east zone.','Soccer Zone E');
+      spawnResponse('police', [[350, -160], [300, -100]]);
+    }],
+    [62000, () => {
+      addEvent('safe','THREAT NEUTRALIZED','Suspect in custody. No casualties confirmed.','Concourse Hub');
+      clearThreats(); simThreats = 0;
+      updatePhase('RESOLUTION','response');
+      document.getElementById('pill-threats').textContent = '0 ACTIVE THREATS';
+      document.getElementById('pill-threats').className = 'pill p-amber';
+      updateStats();
+    }],
+    [75000, () => {
+      addEvent('safe','ALL CLEAR','Complex cleared by LEO. Lockdown lifted.','Complex-Wide');
+      updatePhase('ALL CLEAR','clear');
+      clearResponse();
+      updateDev('GATE-MAIN-ENT','OPEN','s-ok');
+      updateDev('GATE-SOCCER-S','OPEN','s-ok');
+      updateDev('SPEAKER-ZONE-A','STANDBY','s-ok');
+      updateDev('SPEAKER-ZONE-B','STANDBY','s-ok');
+      updateDev('EMG-LIGHTS','STANDBY','s-ok');
+      document.getElementById('pill-gates').textContent = '14 GATES SECURED';
+      document.getElementById('pill-gates').className = 'pill p-green';
+      simAlerts = 0; updateStats();
+    }],
+  ],
+
+  medical: [
+    [0, () => { addEvent('safe','SIM START','Normal operations.','Complex'); updatePhase('ALL CLEAR','clear'); }],
+    [5000, () => { addEvent('warning','MEDICAL CALL','Adult male collapsed, Field 3 dugout.','Field 3'); simAlerts++; updateStats(); }],
+    [8000, () => { addEvent('warning','MEDICAL CALL','Child injured, Field 9 sideline (cleat collision).','Field 9'); simAlerts++; updateStats(); }],
+    [12000, () => {
+      addEvent('critical','MASS CASUALTY','3rd incident: heat exhaustion wave, Fields 11-12.','Fields 11–12');
+      spawnCrowdAlert(620, -310); spawnCrowdAlert(750, -310);
+      updatePhase('MASS CASUALTY EVENT','active'); simThreats++; updateStats();
+      document.getElementById('pill-threats').textContent = '3 MEDICAL EVENTS';
+      document.getElementById('pill-threats').className = 'pill p-red';
+    }],
+    [17000, () => {
+      addEvent('info','MED TRIAGE','Staging area activated at Hub. EMS units summoned.','Hospitality Hub');
+      spawnResponse('medic', [[80, -30], [80, 20], [80, 70]]);
+      spawnResponse('security', [[-215, -260], [620, -380], [750, -380]]);
+      updateDev('MED-01 (Staging)','ACTIVE','s-warn');
+    }],
+    [30000, () => {
+      addEvent('info','EMS ARRIVAL','2 ambulances on-site. Field 3 and Field 9 patients stabilized.','Fields 3 & 9');
+    }],
+    [42000, () => {
+      addEvent('safe','PATIENTS STABLE','All 5 patients treated. 2 transported. Event continues.','Complex');
+      clearThreats(); clearResponse(); simThreats = 0;
+      updatePhase('ALL CLEAR','clear'); simAlerts = 0; updateStats();
+      document.getElementById('pill-threats').textContent = '0 ACTIVE THREATS';
+      document.getElementById('pill-threats').className = 'pill p-amber';
+    }],
+  ],
+
+  evacuation: [
+    [0, () => {
+      addEvent('safe','EVAC SIM START','Initiating full complex evacuation drill.','Complex');
+      updatePhase('EVACUATION DRILL','active');
+    }],
+    [3000, () => {
+      addEvent('critical','EVACUATION ORDER','PA system: orderly evacuation via marked exits.','Complex-Wide');
+      updateDev('SPEAKER-ZONE-A','BROADCASTING','s-warn');
+      updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn');
+      updateDev('EMG-LIGHTS','ACTIVE','s-warn');
+    }],
+    [7000, () => {
+      addEvent('info','GATE STATUS','Gates 1,2,3 open for baseball egress. Gate 10,11 soccer egress.','Perimeter');
+    }],
+    [12000, () => {
+      addEvent('warning','OVERFLOW PARK FULL','Overflow parking exit bottleneck. Traffic control deployed.','Overflow Parking');
+      simAlerts++; updateStats();
+    }],
+    [18000, () => {
+      addEvent('info','UNITS DEPLOYED','Security at all choke points. LEO traffic assist on Murray Rd.','Murray Rd / Exits');
+      spawnResponse('security', [[-430,430],[80,-50],[80,100],[860,-100]]);
+      spawnResponse('police', [[900,-300],[900, 0]]);
+    }],
+    [28000, () => {
+      addEvent('info','PROGRESS','75% of attendance evacuated. Hub area cleared.','Hub / Concourse');
+    }],
+    [40000, () => {
+      addEvent('safe','EVACUATION COMPLETE','All patrons cleared. Complex secured.','Complex');
+      updatePhase('ALL CLEAR','clear');
+      clearResponse(); simAlerts = 0;
+      updateDev('SPEAKER-ZONE-A','STANDBY','s-ok');
+      updateDev('SPEAKER-ZONE-B','STANDBY','s-ok');
+      updateDev('EMG-LIGHTS','STANDBY','s-ok');
+      updateStats();
+    }],
+  ],
+};
+
+function startSim() {
+  resetSim();
+  const key = document.getElementById('sim-sel').value;
+  const script = simScripts[key];
+  if (!script) { addEvent('info','MONITORING','Status monitor active. No simulation selected.','System'); return; }
+  script.forEach(([delay, fn]) => simTimers.push(setTimeout(fn, delay)));
+}
+
+function resetSim() {
+  simTimers.forEach(t => clearTimeout(t)); simTimers = [];
+  clearThreats(); clearResponse();
+  simAlerts = 0; simThreats = 0;
+  document.getElementById('alert-flash').style.display = 'none';
+  document.getElementById('pill-threats').textContent = '0 ACTIVE THREATS';
+  document.getElementById('pill-threats').className = 'pill p-amber';
+  document.getElementById('pill-gates').textContent = '14 GATES SECURED';
+  document.getElementById('pill-gates').className = 'pill p-green';
+  updatePhase('ALL CLEAR','clear');
+  document.getElementById('event-feed').innerHTML = '';
+  resetDevs();
+  updateStats();
+  addEvent('info','RESET','All systems nominal. Simulation cleared.','System');
+}
+
+// ============================================================
+//  UI HELPERS
+// ============================================================
+function addEvent(type, title, msg, loc) {
+  const feed = document.getElementById('event-feed');
+  const card = document.createElement('div');
+  card.className = `ev ${type}`;
+  const ts = new Date().toTimeString().split(' ')[0];
+  card.innerHTML = `<div class="ev-title">${title}</div><div class="ev-loc">${loc}</div><div class="ev-meta">${ts} · ${msg}</div>`;
+  feed.insertBefore(card, feed.firstChild);
+  if (feed.children.length > 40) feed.removeChild(feed.lastChild);
+}
+
+function updatePhase(lbl, cls) {
+  const el = document.getElementById('sim-phase');
+  el.textContent = lbl; el.className = `phase-${cls}`;
+}
+
+function updateStats() {
+  document.getElementById('sv-thr').textContent = simThreats;
+  document.getElementById('sv-alerts').textContent = simAlerts;
+  document.getElementById('dot-thr').style.boxShadow = simThreats > 0 ? '0 0 8px #ff3355' : 'none';
+}
+
+function updateDev(name, status, cls) {
+  document.querySelectorAll('.dev-row').forEach(r => {
+    if (r.querySelector('.dev-name') && r.querySelector('.dev-name').textContent === name) {
+      const s = r.querySelector('.dev-stat');
+      s.textContent = status; s.className = `dev-stat ${cls}`;
+    }
+  });
+}
+
+function resetDevs() {
+  document.querySelectorAll('.dev-row').forEach(r => {
+    const nm = r.querySelector('.dev-name');
+    const st = r.querySelector('.dev-stat');
+    if (!nm || !st) return;
+    const n = nm.textContent;
+    let v = 'ONLINE', c = 's-ok';
+    if (n.startsWith('GATE')) { v = 'OPEN'; }
+    else if (n.includes('SPEAKER') || n.includes('EMG') || n.includes('MED')) { v = 'STANDBY'; }
+    else if (n.startsWith('SEC') || n.startsWith('LEO')) { v = n.includes('LEO') ? 'MOBILE' : 'ON POST'; }
+    st.textContent = v; st.className = `dev-stat ${c}`;
+  });
+}
+
+function triggerLockdown(type) {
+  addEvent('critical', type === 'full' ? '🔒 FULL LOCKDOWN' : '🔒 ZONE LOCKDOWN', 'All access points sealed', 'Complex-Wide');
+  updateDev('GATE-MAIN-ENT','LOCKED','s-alert');
+  updateDev('GATE-SOCCER-S','LOCKED','s-alert');
+  document.getElementById('pill-gates').textContent = '14 GATES LOCKED';
+  document.getElementById('pill-gates').className = 'pill p-red';
+}
+
+function evacuate() {
+  addEvent('critical','⚡ EVACUATION','Evacuation order issued. All PA systems active.','Complex-Wide');
+  updateDev('SPEAKER-ZONE-A','BROADCASTING','s-warn');
+  updateDev('SPEAKER-ZONE-B','BROADCASTING','s-warn');
+  updateDev('EMG-LIGHTS','ACTIVE','s-warn');
+}
+
+function dispatchResponse() {
+  spawnResponse('police', [[800,-350],[800,-150]]);
+  spawnResponse('security', [[80,0],[-200,-200],[620,-350]]);
+  addEvent('info','DISPATCH','LEO + 3 security units responding.','Complex');
+}
+
+function allClear() {
+  resetSim();
+  addEvent('safe','✓ ALL CLEAR','System reset. Complex secure.','Complex-Wide');
+}
+
+function toggleCrowdPanel() {
+  crowdPanelVisible = !crowdPanelVisible;
+  document.getElementById('crowd-panel').style.display = crowdPanelVisible ? 'block' : 'none';
+}
+
+function toggleLayer(layer) {
+  layers[layer] = !layers[layer];
+  const arr = layer === 'cameras' ? markers.cameras : layer === 'sensors' ? markers.sensors : layer === 'threats' ? markers.threats : markers.response;
+  arr.forEach(s => s.visible = layers[layer]);
+  const btn = document.getElementById(`ly-${layer}`);
+  if (btn) btn.style.opacity = layers[layer] ? '1' : '0.4';
+}
+
+// ============================================================
+//  CLOCK & ANIMATE
+// ============================================================
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    [n.getHours(), n.getMinutes(), n.getSeconds()].map(v => String(v).padStart(2,'0')).join(':');
+}
+setInterval(updateClock, 1000); updateClock();
+
+function animateMarkers() {
+  pulseT += 0.04;
+  threatMarkers.forEach(m => {
+    const s = 22 + Math.sin(pulseT * 3.5) * 5;
+    m.scale.set(s, s, 1);
+  });
+  markers.cameras.forEach((c, i) => {
+    c.position.y = (c.userData.baseY || 42) + Math.sin(pulseT + i * 0.6) * 0.8;
+    if (!c.userData.baseY) c.userData.baseY = c.position.y;
+  });
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  updateCamera();
+  animateMarkers();
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ============================================================
+//  LOADING SEQUENCE
+// ============================================================
+const loadSteps = [
+  [10, 'LOADING COMPLEX GEOMETRY...'],
+  [25, 'MAPPING 16 FIELDS...'],
+  [45, 'REGISTERING 32 CAMERAS...'],
+  [60, 'CONNECTING AUDIO SENSORS...'],
+  [75, 'LINKING GATE CONTROL SYSTEMS...'],
+  [88, 'LOADING SIMULATION SCRIPTS...'],
+  [100, 'SYSTEM READY'],
+];
+let li = 0;
+const loadInterval = setInterval(() => {
+  if (li >= loadSteps.length) {
+    clearInterval(loadInterval);
+    setTimeout(() => {
+      document.getElementById('loading').style.opacity = '0';
+      document.getElementById('loading').style.transition = 'opacity 0.6s';
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        addEvent('safe','SYSTEM ONLINE','RFSC Sentinel Command initialized. 16 fields monitored.','Complex');
+        addEvent('info','EVENT ACTIVE','Youth Tournament Day 2. Est. attendance: 2,840.','Complex');
+        // Gentle intro spin
+        let f = 0;
+        const intro = setInterval(() => { camTheta += 0.002; f++; if (f > 250) clearInterval(intro); }, 16);
+      }, 600);
+    }, 400);
+    return;
+  }
+  const [pct, msg] = loadSteps[li++];
+  document.getElementById('ld-bar').style.width = pct + '%';
+  document.getElementById('ld-status').textContent = msg;
+}, 300);
+
+animate();
+</script>
+</body>
+</html>
